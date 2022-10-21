@@ -3,16 +3,18 @@
     margin-bottom: 20px;
 }
 
-.user-panel{
+.user-panel {
     display:flex;
     justify-content: flex-end;
 }
-.change-user{
+
+.change-user {
     display:flex;
     justify-content: flex-end;
     margin-top: 10px;
 }
-.exit-button{
+
+.exit-button {
     font-family: 'Roboto', sans-serif;
     background-color: #D9D9D9;
     padding: 8px 44px;
@@ -20,5 +22,6 @@
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    border: 0px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 2px;
 }
