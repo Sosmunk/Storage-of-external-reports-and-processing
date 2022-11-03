@@ -1,7 +1,5 @@
 body {
-    background-color: #FAEE9F;
-    padding: 15px;
-    font-family: 'Roboto', sans-serif;
+    background-color: #cc8f9b;
 }
 
 ul {
@@ -16,26 +14,8 @@ button {
     margin: 0;
 }
 
-p {
-    margin: 0;
-}
-
 a {
     text-decoration: none;
-}
-
-h1,h2,h3,h4,h5,h6 {
-    margin: 0;
-}
-
-li {
-    padding: 0;
-    margin :0;
-}
-
-.main-header {
-    height: 100px;
-    margin-bottom: 20px;
 }
 
 .user-panel {
@@ -43,10 +23,9 @@ li {
     justify-content: flex-end;
 }
 
-.change-user {
-    display:flex;
-    justify-content: flex-end;
-    margin-top: 10px;
+.user-role {
+    text-decoration: none;
+    color: #FFF;
 }
 
 .exit-button {
