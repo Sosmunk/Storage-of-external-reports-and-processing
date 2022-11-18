@@ -80,6 +80,26 @@
                             <p>24 файла</p>   
                         </div>
                         <div class="box-container">
+                            <template id="folder-template">
+                                <div class="box-row folder align-items-center">
+                                    <img src="./src/folder.png" width="20px" height="20px">
+                                    <p>Folder_Name</p>
+                                </div>
+                            </template>
+                            <template id="uncaptured-file-template">
+                                <div class="box-row file align-items-center">
+                                    <img src="./src/file.png" width="20px" height="20px">
+                                    <p>File_Name</p>
+                                    <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
+                                </div>
+                            </template>
+                            <template id="captured-file-template">
+                                <div class="box-row file align-items-center">
+                                    <img src="./src/file.png" width="20px" height="20px">
+                                    <p>style.css</p>
+                                    <span>Захвачен<img src="./src/padlock.png" width="24px"></span>
+                                </div>
+                            </template>
                             <div class="box-row folder align-items-center">
                                 <img src="./src/folder.png" width="20px" height="20px">
                                 <p>src</p>
