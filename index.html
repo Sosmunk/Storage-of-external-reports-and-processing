@@ -14,9 +14,9 @@
         <link rel="stylesheet" href="./styles/style.css">
     </head>
     <body>
-        <header class="main-header p-3" style="background-color: #6a3642;">
+        <header class="main-header p-3" style="background-color: #6a3642; box-shadow: 0 -6px 10px 5px rgba(0,0,0,0.75);">
             <div class="d-flex justify-content-start align-items-end">
-                <div class="dropdown mr-auto">
+                <div class="dropdown mr-auto ml-2">
                     <button class="btn dropdown-toggle" style="border-radius: 5px" type="button" id="dropdownRepoButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Список репозиториев
                     </button>
@@ -39,49 +39,88 @@
                         <a class="dropdown-item" href="#">Администратор</a>
                         <div class="dropdown-divider"></div>
                         <h6 class="dropdown-header">Администрирование</h6>
+                        <a class="dropdown-item" href="#">Снять захват</a>
                     </div>
                 </div>
                 <div class="user-panel">
-                    <button class="exit-button">
+                    <button class="btn secondary-btn">
+                        Выйти
+                        <!--
                         <img src="./src/logout.svg" class="img-responsive">
+                        -->
                     </button>
                 </div>
             </div>
         </header>
         <main>
-            <div class="menu">
-                <div class="buttons-wrapper">
-                    <ul class="buttons-list">
-                        <li class="buttons-item">
-                            <button class="menu-button" type="button" id="">Кнопка</button>
-                        </li>
-                        <li class="buttons-item">
-                            <button class="menu-button" type="button" id="">Кнопка</button>
-                        </li>
-                        <li class="buttons-item">
-                            <button class="menu-button" type="button" id="">Кнопка</button>
-                        </li>
-                        <li class="buttons-item">
-                            <button class="menu-button" type="button" id="">Кнопка</button>
-                        </li>
-                        <li class="buttons-item">
-                            <button class="menu-button" type="button" id="">Кнопка</button>
-                        </li>
-                    </ul>
+            <div class="menu d-flex mb-0">
+                <div class="btn-group p-3 mr-auto" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-light">Захват</button>
+                    <button type="button" class="btn btn-light" disabled="true">Отмена захвата</button>
+                    <button type="button" class="btn btn-light" disabled="true">Поместить в хранилище</button>
+                    <button type="button" class="btn btn-light" disabled="true">Получить версию из хранилища</button>
                 </div>
-                <input class="search-field" placeholder="Поиск...">
+                <div class="input-group p-3 search">
+                    <input type="text" class="form-control" style="border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.25);" placeholder="Поиск..." aria-label="Search" aria-describedby="basic-addon1">
+                </div>
             </div>
-            <div class="workspace">
-                <div class="hierarchy">
+            <div class="workspace rounded px-3">
+                <div class="hierarchy" style="border-radius: 6px; box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);">
+                    <div class="box">
+                        <div class="box-header d-flex justify-content-between align-items-baseline">
+                            <h4>Список файлов</h4>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb align-items-center" style="height: 40px; margin: 0; padding: 0;">
+                                  <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                  <li class="breadcrumb-item"><a href="#">Library</a></li>
+                                  <li class="breadcrumb-item"><a href="#">Library</a></li>
+                                  <li class="breadcrumb-item active" aria-current="page">Data</li>
+                                </ol>
+                            </nav>
+                            <p>24 файла</p>   
+                        </div>
+                        <div class="box-container">
+                            <div class="box-row folder align-items-center">
+                                <img src="./src/folder.png" width="20px" height="20px">
+                                <p>src</p>
+                            </div>
+                            <div class="box-row folder align-items-center">
+                                <img src="./src/folder.png" width="20px" height="20px">
+                                <p>bin</p>
+                            </div>
+                            <div class="box-row file align-items-center">
+                                <img src="./src/file.png" width="20px" height="20px">
+                                <p>index.html</p>
+                                <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
+                            </div>
+                            <div class="box-row file align-items-center">
+                                <img src="./src/file.png" width="20px" height="20px">
+                                <p>script.js</p>
+                                <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
+                            </div>
+                            <div class="box-row file align-items-center">
+                                <img src="./src/file.png" width="20px" height="20px">
+                                <p>style.css</p>
+                                <span>Захвачен<img src="./src/padlock.png" width="24px"></span>
+                            </div>
+                            <div class="box-row file align-items-center">
+                                <img src="./src/file.png" width="20px" height="20px">
+                                <p>vacancies.csv</p>
+                                <span>Захвачен<img src="./src/padlock.png" width="24px"></span>
+                            </div>
+                            <div class="box-row file align-items-center">
+                                <img src="./src/file.png" width="20px" height="20px">
+                                <p>main.py</p>
+                                <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="description">
+                <div class="description" style="border-radius: 6px; box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);">
 
                 </div>
             </div>
         </main>
-        <footer class="main-footer">
-
-        </footer>
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

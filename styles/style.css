@@ -44,7 +44,6 @@ a {
     display: flex;
     margin-bottom: 30px;
     width: 100%;
-    height: auto;
     gap: 25px;
     justify-content: space-between;
     align-items: stretch;
@@ -94,12 +93,13 @@ a {
 
 .workspace {
     display: flex;
-    height: 600px;
+    height: auto;
     gap: 10px;
 }
 
 .hierarchy {
     width:60%;
+    height: 550px;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.5);
     border-radius: 2px;
@@ -107,6 +107,7 @@ a {
 
 .description {
     width:40%;
+    height: 550px;
     background-color:white;
     border: 1px solid rgba(0, 0, 0, 0.5);
     border-radius: 2px;
@@ -115,4 +116,68 @@ a {
 .main-footer {
     height: 20px;
     margin-top: 15px;
+}
+
+.search {
+    margin-left: auto;
+    width: 300px;
+}
+
+.box {
+    background-color: var(--color-canvas-default);
+    border-color: #d0d6dc;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 6px;
+}
+
+.box-header { 
+    background: #f6f8fa;
+}
+
+.box-header h4 {
+    margin: 0;
+    margin-left: 8px;
+    padding: 8px;
+    padding-bottom: 14px;
+}
+
+.box-header p {
+    margin: 0;
+    margin-right: 10px;
+    padding: 8px;
+}
+
+.box-row {
+    display: flex;
+    padding: 8px;
+    margin-top: -1px;
+    list-style-type: none;
+    border-top-color: #d0d6dc;
+    border-top-style: solid;
+    border-top-width: 1px;
+}
+
+.box-row img {
+    margin-left: 5px;
+}
+
+.box-row p {
+    margin: 0;
+    padding-bottom: 4px;
+    margin-left: 10px;
+}
+
+.box-row span {
+    display: flex;
+    gap: 8px;
+    font-size: 400;
+    margin: 0;
+    margin-left: auto;
+    margin-right: 5px;
+    margin-top: -2px;
+}
+
+.box-row:hover {
+    background-color: #f6f8fa;
 }
