@@ -8,18 +8,22 @@ async function sendRequest() {
     const passwordField = document.getElementById('password');
     const url = `http://5.165.236.244:9999/api/login`
 
-    let request = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: {
-            "username": "admin",
-            "password": "123456",
+    let request = await axios.post('http://5.165.236.244:9999/api/login',
+        {
+          username: 'admin',
+          password: '123456'
         }
-    });
-    let response = await request.json();
+      )
+      .then(function (response) {
+        // обработка успешного запроса
+        return response.data;
+      })
+      .catch(function (error) {
+        // обработка ошибки
+        console.error(error);
+      });
+    let response = await request
+    console.log(response)
     showMessage(response.message);
 }
 
