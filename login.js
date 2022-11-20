@@ -10,20 +10,18 @@ async function sendRequest() {
 
     let request = await axios.post('http://5.165.236.244:9999/api/login',
         {
-          username: 'admin',
+          username: 'admin1',
           password: '123456'
         }
       )
       .then(function (response) {
         // обработка успешного запроса
-        return response.data;
+        showMessage(response.data.message);
       })
       .catch(function (error) {
         // обработка ошибки
-        console.error(error);
+        showMessage(error.response.data.message);
       });
-    console.log(request)
-    showMessage(request.message);
 }
 
 
