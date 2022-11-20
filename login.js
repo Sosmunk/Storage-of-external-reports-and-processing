@@ -22,9 +22,8 @@ async function sendRequest() {
         // обработка ошибки
         console.error(error);
       });
-    let response = await request
-    console.log(response)
-    showMessage(response.message);
+    console.log(request)
+    showMessage(request.message);
 }
 
 
