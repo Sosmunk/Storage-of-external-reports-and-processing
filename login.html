@@ -11,6 +11,7 @@
             integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" 
             crossorigin="anonymous">
         <link rel="stylesheet" href="./styles/style.css">
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script defer src="./login.js"></script>
     </head>
     <body style="background-color: #9A616D">
@@ -25,26 +26,26 @@
                                         <h3>Авторизация <strong>1C-Modules</strong></h3>
                                         <p class="mb-4">Введите данные своего аккаунта или авторизуйтесь с помощью Яндекс ID</p>
                                     </div>
-                                    <form>
+                                    <div>
                                         <div class="form-group first">
-                                            <label for="email">Адрес электронной почты</label>
-                                            <input type="text" class="form-control" id="email">
+                                            <label for="email" class="form-label">Адрес электронной почты</label>
+                                            <input type="text" class="form-control" id="email" required>
                                         </div>
                                         <div class="form-group last mb-4">
-                                            <label for="password">Пароль</label>
-                                            <input type="password" class="form-control" id="password">
+                                            <label for="password" class="form-label">Пароль</label>
+                                            <input type="password" class="form-control" id="password" required>
+                                            <div class="invalid-feedback">
+                                                Неверный адрес электронной почты или пароль
+                                            </div>
                                         </div>
-                                        <input type="submit" value="Войти" class="btn btn-pill btn-block btn-primary" id="submitButton">
-                                        <div hidden="true" id="feedback-label">
-                                            Имя пользователя или пароль введены неверно
-                                        </div>
+                                        <input value="Войти" class="btn btn-pill btn-block btn-primary" id="submitButton">
                                         <span class="d-block text-center my-3 text-muted">или через</span>
                                         <div class="social-login text-center">
                                             <a href="./index.html" class="yandex">
                                                 <img src="./src/Yandex_icon.svg" class="img-responsive" style="width:15%">
                                             </a>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

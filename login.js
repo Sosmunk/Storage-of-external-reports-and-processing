@@ -6,28 +6,29 @@ document.addEventListener('DOMContentLoaded', function() {
 async function sendRequest() {
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
-    const url = `http://5.165.236.244:9999/api/login`
+    const url = `http://5.165.236.244:9999/api/login`;
 
-    let request = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: {
-            "username": "admin",
-            "password": "123456",
+    let request = await axios.post(url,
+        {
+          username: emailField.value,
+          password: passwordField.value
         }
-    });
-    let response = await request.json();
-    showMessage(response.message);
+      )
+      .then(function (response) {
+        // обработка успешного запроса
+        //showMessage(response.data.message);
+        console.log(response.data);
+        window.location.replace("./index.html");
+      })
+      .catch(function (error) {
+        // обработка ошибки
+        showMessage(error.response.data.message);
+        emailField.classList.toggle('is-invalid', true);
+        passwordField.classList.toggle('is-invalid', true);
+      });
+    //console.log(request)
 }
 
-
 function showMessage(message) {
-    console.log(message)
-    if (message === 'Отсутствует логин или пароль') {
-        const feedbackLabel = document.getElementById('feedback-label');
-        feedbackLabel.textContent = message;
-    }
+    console.log(message);
 }

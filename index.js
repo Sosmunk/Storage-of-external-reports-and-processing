@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const repoMenu = document.getElementById('repo-menu');
+    const dropdownRepoButton = document.getElementById('dropdown-repo-button');
     const filesList = document.getElementById('files-list');
     const folderTemplate = document.getElementById('folder-template');
     const uncapturedFileTemplate = document.getElementById('uncaptured-file-template');
@@ -7,7 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchField = document.getElementById('search-field');
     const header = document.getElementById('files-list-header');
     const numberOfFilesElement = header.querySelector('p');
+    const quitButton = document.getElementById('quit-button');
     let templates = [folderTemplate, uncapturedFileTemplate, capturedFileTemplate];
+    let fileList = [];
+    let activeRepo;
     createPage();
 
     function numeralFormatter(number, oneCase, twoFourCase, fiveNineCase) {
@@ -27,7 +31,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let repoItem = document.createElement('button');
         repoItem.classList.add('dropdown-item');
         repoItem.textContent = repository.name;
-        repoItem.addEventListener('click', function() {updateHierarchy(repository)});
+        repoItem.addEventListener('click', function() {
+            activeRepo = repository;
+            updateHierarchy();
+        });
         repoMenu.prepend(repoItem);
     }
     
@@ -35,17 +42,25 @@ document.addEventListener('DOMContentLoaded', function() {
         let newFile = templates[1].content.cloneNode(true);
         let fileNameElement = newFile.querySelector('p');
         fileNameElement.textContent = file;
+        fileList.push(newFile);
         filesList.appendChild(newFile);
     }
     
-    function updateHierarchy(activeRepo, searchParam='') {
-        const filesCount = activeRepo.files.length;
+    function updateHierarchy(searchParam='') {
+        dropdownRepoButton.textContent = activeRepo.name;
         filesList.innerHTML = '';
-        numberOfFilesElement.textContent = `${filesCount} ${numeralFormatter(filesCount, 'файл', 'файла', 'файлов')}`;
+        let filesCount = 0;
         activeRepo.files.forEach(file => {
-            if (searchParam == '' || file.includes(searchParam))
-            createNewHierarchyItem(filesList, templates, file)
-        })
+            if (searchParam == '' || file.includes(searchParam)) {
+                createNewHierarchyItem(filesList, templates, file);
+                filesCount++;
+            }
+        });
+        numberOfFilesElement.textContent = `${filesCount} ${numeralFormatter(filesCount, 'файл', 'файла', 'файлов')}`;
+    }
+
+    function quitPage() {
+        if (confirm('Вы действительно хотите выйти?')) window.location.replace("./login.html");
     }
     
     async function createPage() {
@@ -54,8 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
             createNewRepoItem(repoMenu, repo);
         });
     
-        let activeRepo = repositoryList.repositories[0];
-        updateHierarchy(activeRepo);
+        activeRepo = repositoryList.repositories[0];
+        updateHierarchy();
+        searchField.addEventListener('input', function() {updateHierarchy(searchField.value)});
+        quitButton.addEventListener('click', function() {quitPage()});
     }
 });
 
