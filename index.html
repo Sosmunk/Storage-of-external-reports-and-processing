@@ -53,31 +53,30 @@
         <main>
             <div class="menu d-flex mb-0">
                 <div class="btn-group p-3 mr-auto" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-light">Захват</button>
-                    <button type="button" class="btn btn-light" disabled="true">Отмена захвата</button>
-                    <button type="button" class="btn btn-light" disabled="true">Поместить в хранилище</button>
-                    <button type="button" class="btn btn-light" disabled="true">Получить версию из хранилища</button>
+                    <button type="button" class="btn btn-light" id="capture-button" disabled="true">Захват</button>
+                    <button type="button" class="btn btn-light" id="uncapture-button" disabled="true">Отмена захвата</button>
+                    <button type="button" class="btn btn-light" id="push-button" disabled="true">Поместить в хранилище</button>
+                    <button type="button" class="btn btn-light" id="pull-button" disabled="true">Получить версию из хранилища</button>
                 </div>
                 <div class="input-group p-3 search">
                     <input type="text" class="form-control" style="border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.25);" placeholder="Поиск..." aria-label="Search" aria-describedby="basic-addon1" id="search-field">
                 </div>
             </div>
             <div class="workspace rounded px-3">
-                <div class="hierarchy" style="border-radius: 6px; box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);">
+                <div class="hierarchy">
                     <div class="box">
-                        <div class="box-header d-flex justify-content-between align-items-baseline" style="box-shadow: 0 3px 10px 0 rgba(0,0,0,0.25); border-radius: 4% 2% 0 0;" id="files-list-header">
+                        <div class="box-header d-flex justify-content-between align-items-baseline" id="files-list-header">
                             <h4>Список файлов</h4>
                             <nav aria-label="breadcrumb">
-                                <ol class="breadcrumb align-items-center" style="height: 40px; margin: 0; padding: 0;">
-                                  <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                    <li class="breadcrumb-item"><a href="#">Library</a></li>
-                                    <li class="breadcrumb-item"><a href="#">Library</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">Data</li>
+                                <ol class="breadcrumb align-items-center" id="breadcrumb" style="height: 40px; margin: 0; padding: 0;">
+                                    <template id="breadcrumb-template">
+                                        <li class="breadcrumb-item">sss</li>
+                                    </template>
                                 </ol>
                             </nav>
                             <p>Files_Count</p>   
                         </div>
-                        <div class="box-container" id="files-list" style="overflow-y:auto; height: 545px;">
+                        <div class="box-container" id="files-list">
                             <template id="folder-template">
                                 <div class="box-row folder align-items-center">
                                     <img src="./src/folder.png" width="20px" height="20px">
@@ -134,8 +133,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="description" style="border-radius: 6px; box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2);">
-                    <div class="d-flex justify-content-between align-items-baseline" style="box-shadow: 0 3px 10px 0 rgba(0,0,0,0.25); border-radius: 4% 2% 0 0;" id="description-header">
+                <div class="description">
+                    <div class="d-flex justify-content-between align-items-baseline description-header" id="description-header">
                         <h4 id="description-file-name">Выберите файл для просмотра информации</h4>
                     </div>
                     <table class="table table-striped table-bordered">

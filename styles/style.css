@@ -98,19 +98,30 @@ a {
 }
 
 .hierarchy {
+    position: relative;
     width:60%;
-    height: 600px;
+    height: 565px;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.5);
     border-radius: 2px;
+    border-radius: 6px; 
+    /* box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2); */
 }
 
 .description {
     width:40%;
-    height: 600px;
+    height: 565px;
     background-color:white;
     border: 1px solid rgba(0, 0, 0, 0.5);
     border-radius: 2px;
+    border-radius: 6px; 
+    /* box-shadow: 0px 5px 10px 5px rgba(34, 60, 80, 0.2); */
+}
+
+.description-header {
+    /* box-shadow: 0 3px 10px 0 rgba(0,0,0,0.25);  */
+    border-radius: 4% 2% 0 0;
+    background: rgba(246, 248, 250, 0.8);
 }
 
 .main-footer {
@@ -124,7 +135,6 @@ a {
 }
 
 .box {
-    background-color: var(--color-canvas-default);
     border-color: #d0d6dc;
     border-style: solid;
     border-width: 1px;
@@ -132,8 +142,10 @@ a {
 }
 
 .box-header {   
-    background: rgba(246, 248, 250, 0.6);
+    background: rgba(246, 248, 250, 0.8);
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+    /* box-shadow: 0 3px 10px 0 rgba(0,0,0,0.25);  */
+    border-radius: 4% 2% 0 0;
 }
 
 .box-header h4 {
@@ -178,7 +190,7 @@ a {
 .box-row span {
     display: flex;
     gap: 8px;
-    font-size: 400;
+    font-weight: 400;
     margin: 0;
     margin-left: auto;
     margin-right: 5px;
@@ -187,6 +199,11 @@ a {
 
 .box-row:hover {
     background-color: #f6f8fa;
+}
+
+.box-container {
+    overflow-y: auto; 
+    height: 508px;
 }
 
 #description-header {

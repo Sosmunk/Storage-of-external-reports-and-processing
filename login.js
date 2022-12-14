@@ -7,18 +7,21 @@ async function sendRequest() {
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
     const url = `http://5.165.236.244:9999/api/login`;
+    // const headers = {
+    //   'Contetnt-Type': 'application/json',
+    //   Set
+    // }
 
     let request = await axios.post(url,
         {
           username: emailField.value,
-          password: passwordField.value
+          password: passwordField.value,
         }
       )
       .then(function (response) {
         // обработка успешного запроса
-        //showMessage(response.data.message);
-        console.log(response.data);
-        window.location.replace("./index.html");
+        //showMessage(response.data.message); 
+        window.location.replace(`./index.html?session_id=${encodeURIComponent(response.data.session_id)}`);
       })
       .catch(function (error) {
         // обработка ошибки
