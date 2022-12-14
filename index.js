@@ -53,15 +53,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         repoMenu.prepend(repoItem);
     }
-    
     function createNewHierarchyItem(filesList, templates, file) {
         let newFile;
         if (file.type === 'folder') {
             newFile = templates[0].content.cloneNode(true);
             let divContainer = newFile.querySelector('.folder');
             divContainer.addEventListener('dblclick', (event) => {
-                updateHierarchy(file.files);
-                updateBreadcrumb([file.name]);
+                updateHierarchy(file.files,'', filesList);
+                //updateBreadcrumb([file.name]);
             });
         } else if (file.type === 'file' && file.lock === false) {
             newFile = templates[1].content.cloneNode(true);
@@ -74,11 +73,15 @@ document.addEventListener('DOMContentLoaded', function() {
         filesList.appendChild(newFile);
     }
     
-    function updateHierarchy(files=fileList, searchParam='') {
+    function updateHierarchy(files=fileList, searchParam='', parent=undefined) {
         dropdownRepoButton.textContent = activeRepo.name;
         filesList.innerHTML = '';
         let filesCount = 0;
         console.log(files);
+        if (parent !== undefined) {
+            createNewHierarchyItem(filesList,templates,parent)
+        }
+        
         files.forEach(file => {
             console.log(file.name);
             if (searchParam == '' || file.name.includes(searchParam)) {
@@ -100,23 +103,23 @@ document.addEventListener('DOMContentLoaded', function() {
         numberOfFilesElement.textContent = `${filesCount} ${numeralFormatter(filesCount, 'файл', 'файла', 'файлов')}`;
     }
 
-    function updateBreadcrumb(path=['main']) {
-        const breadcrumb = document.getElementById('breadcrumb');
-        const breadcrumbTemplate = document.getElementById('breadcrumb-template');
-        path.forEach(piece => {
-            let newBreadcrumbPiece = breadcrumbTemplate.content.cloneNode(true);
-            if (piece === path[path.length - 1]) {
-                newBreadcrumbPiece.querySelector('li').classList.add('active');
-                ariaCurrent = 'page';
-            } else {
-                newBreadcrumbPiece.querySelector('li').addEventListener('click', function() {
-                    updateBreadcrumb(path);
-                });
-            }
-            newBreadcrumbPiece.querySelector('li').textContent = piece;
-            breadcrumb.appendChild(newBreadcrumbPiece);
-        });
-    }
+    // function updateBreadcrumb(path=['main']) {
+    //     const breadcrumb = document.getElementById('breadcrumb');
+    //     const breadcrumbTemplate = document.getElementById('breadcrumb-template');
+    //     path.forEach(piece => {
+    //         let newBreadcrumbPiece = breadcrumbTemplate.content.cloneNode(true);
+    //         if (piece === path[path.length - 1]) {
+    //             newBreadcrumbPiece.querySelector('li').classList.add('active');
+    //             ariaCurrent = 'page';
+    //         } else {
+    //             newBreadcrumbPiece.querySelector('li').addEventListener('click', function() {
+    //                 updateBreadcrumb(path);
+    //             });
+    //         }
+    //         newBreadcrumbPiece.querySelector('li').textContent = piece;
+    //         breadcrumb.appendChild(newBreadcrumbPiece);
+    //     });
+    // }
 
     function updateActionMenu(activeFile) {
         captureButton.disabled = false;
@@ -171,9 +174,8 @@ document.addEventListener('DOMContentLoaded', function() {
         activeRepo = repositoryList.repositories[0];
         fileList = activeRepo.files;
 
-        updateHierarchy(fileList);
+        updateHierarchy(fileList, '', activeRepo);
         updateBreadcrumb();
         quitButton.addEventListener('click', function() {quitPage()});
     }
 });
-
