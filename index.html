@@ -23,6 +23,11 @@
                         Список репозиториев
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownRepoButton" id="repo-menu">
+                        <template id="repo-template">
+                            <div class="dropdown-item">
+                                <p style="margin: 0; padding-bottom: 3px;">Repository Name</p>
+                            </div>
+                        </template>
                         <div class="dropdown-divider"></div>
                         <h6 class="dropdown-header">Администрирование</h6>
                         <button class="dropdown-item" href="#">Добавить новый репозиторий</button>
@@ -68,16 +73,16 @@
                     <div class="box">
                         <div class="box-header d-flex justify-content-between align-items-baseline" id="files-list-header">
                             <h4>Список файлов</h4>
-                            <nav aria-label="breadcrumb">
-                                <ol class="breadcrumb align-items-center" id="breadcrumb" style="height: 40px; margin: 0; padding: 0;">
-                                    <template id="breadcrumb-template">
-                                        <li class="breadcrumb-item">sss</li>
-                                    </template>
-                                </ol>
                             </nav>
                             <p>Files_Count</p>   
                         </div>
                         <div class="box-container" id="files-list">
+                            <template id="parent-template">
+                                <div class="box-row folder align-items-center">
+                                    <img src="./src/folder.png" width="20px" height="20px">
+                                    <p>..</p>
+                                </div>
+                            </template>
                             <template id="folder-template">
                                 <div class="box-row folder align-items-center">
                                     <img src="./src/folder.png" width="20px" height="20px">

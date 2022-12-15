@@ -1,8 +1,9 @@
 class TreeNode {
-    constructor(key, value = key, type = type, parent = null) {
+    constructor(key, value = key, type = type, lock = false, parent = null) {
         this.key = key;
-        this.type = type;
         this.value = value;
+        this.type = type;
+        this.lock = lock;
         this.parent = parent;
         this.children = [];
     }
@@ -22,7 +23,7 @@ class TreeNode {
   
 class Tree {
     constructor(key, value = key, type = 'folder') {
-        this.root = new TreeNode(key, value, type);
+        this.root = new TreeNode(key, value, type, false);
     }
 
     *preOrderTraversal(node = this.root) {
@@ -43,10 +44,10 @@ class Tree {
         yield node;
     }
 
-    insert(parentNodeKey, key, value = key, type) {
+    insert(parentNodeKey, key, value = key, type, lock = false) {
         for (let node of this.preOrderTraversal()) {
             if (node.key === parentNodeKey) {
-                node.children.push(new TreeNode(key, value, type, node));
+                node.children.push(new TreeNode(key, value, type, lock, node));
                 return true;
             }
         }
@@ -79,36 +80,16 @@ function numeralFormatter(number, oneCase, twoFourCase, fiveNineCase) {
     else return fiveNineCase;
 }
 
-// class File {
-//     constructor(name, path, isCaptured = false) {
-//         this.name = name;
-//         this.path = path;
-//         this.isCaptured = isCaptured;
-//     }
-// }
-// class Folder {
-//     constructor(name, path, isCaptured = false) {
-//         this.name = name;
-//         this.path = path;
-//         this.isCaptured = isCaptured;
-//         this.files = [];
-//         this.folders = [];
-//     }
-// }
-// class Repository {
-//     constructor(name, path) {
-//         this.name = name;
-//         this.path = path;
-//         this.files = [];
-//         this.folders = [];
-//     }
-
 const repoMenu = document.getElementById('repo-menu');
 const dropdownRepoButton = document.getElementById('dropdown-repo-button');
 const filesList = document.getElementById('files-list');
+
+const repoTemplate = document.getElementById('repo-template');
+const parentTemplate = document.getElementById('parent-template');
 const folderTemplate = document.getElementById('folder-template');
 const uncapturedFileTemplate = document.getElementById('uncaptured-file-template');
 const capturedFileTemplate = document.getElementById('captured-file-template');
+
 const searchField = document.getElementById('search-field');
 const header = document.getElementById('files-list-header');
 const numberOfFilesElement = header.querySelector('p');
@@ -144,7 +125,7 @@ function createRepositoryTree(repository) {
 }
 
 function createTreeNode(file, parent){
-    let treeNode = new TreeNode(file.id, file.name, file.type, parent);
+    let treeNode = new TreeNode(file.id, file.name, file.type, file.lock, parent);
     return treeNode;
 }
 
@@ -156,13 +137,159 @@ function fillFoldersRecursively(folder, parentFolder) {
         }
     }
 }
-async function init(){
-    let a = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list")
-    console.log(a.repositories)
-    let b = await createRepositoryTree(a.repositories[0])
-    console.log(b)
+
+
+// Стартовая функция
+async function createPage() {
+    let repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
+    activeRepo = createRepositoryTree(repoList.repositories[0]);
+    console.log(activeRepo);
+    DOM_CreateRepoList(repoList);
+    DOM_CreateHierarchy(activeRepo.root);
+    DOM_UpdateButtonsState(activeFile);
+    dropdownRepoButton.textContent = activeRepo.root.value;
+
+    quitButton.addEventListener('click', () => quitPage());
+    captureButton.addEventListener('click', () => captureFile());
+    uncaptureButton.addEventListener('click', () => uncaptureFile());
+    pushButton.addEventListener('click', () => pushFile());
+    pullButton.addEventListener('click', () => pullFile());
 }
-init()
+
+let activeRepo;
+let activeFile = null;
+
+createPage()
+
+
+// +-------------------------------+
+// | Работа с файлами репозиториев |
+// +-------------------------------+
+
+// Захват файла
+function captureFile() {
+    console.log(`Capturing: ${activeFile.value}`);
+}
+
+// Снятие захвата
+function uncaptureFile() {
+    console.log(`Uncapturing: ${activeFile.value}`);
+}
+
+// Положить новую версию в хранилище
+function pushFile() {
+    console.log(`Pushing: ${activeFile.value}`);
+}
+
+// Взять версию из хранилища
+function pullFile() {
+    console.log(`Pulling: ${activeFile.value}`);
+}
+
+// Выйти со страницы
+function quitPage() {
+    if (confirm('Вы действительно хотите выйти?')) window.location.replace("./login.html");
+}
+
+// +-------------------------------+
+// | Работа с DOM-деревом страницы |
+// +-------------------------------+
+
+// Создание DOM-элементов списка репозиториев
+function DOM_CreateRepoList(repoList) { 
+    repoList.repositories.forEach(repo => {
+        const repoDOM = repoTemplate.content.cloneNode(true);
+        repoDOM.querySelector('div').addEventListener('click', event => {
+            activeRepo = createRepositoryTree(repo);
+            DOM_CreateHierarchy(activeRepo.root);
+            dropdownRepoButton.textContent = activeRepo.root.value;
+        });
+        let repoNameDOM = repoDOM.querySelector('p');
+        repoNameDOM.textContent = repo.name;
+        repoMenu.prepend(repoDOM);
+    });
+}
+
+// Создание DOM-элементов списка файлов
+function DOM_CreateHierarchy(treeNode) {
+    filesList.innerHTML = ''; // Очищаем DOM-дерево
+    activeFile = null;
+
+    if (treeNode.parent !== null) {
+        const parentDOM = parentTemplate.content.cloneNode(true);
+        parentDOM.querySelector('div').addEventListener('click', event => {
+            DOM_UpdateButtonsState(null);
+        });
+        parentDOM.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(treeNode.parent));
+        filesList.append(parentDOM);
+    }
+    treeNode.children.forEach(child => {
+        let newDOMItem;
+        if (child.type === "folder") {
+            newDOMItem = folderTemplate.content.cloneNode(true);
+            newDOMItem.querySelector('div').addEventListener('click', event => {
+                DOM_UpdateButtonsState(null);
+            });
+            newDOMItem.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(child));
+        } else if (child.type === "file" && child.lock === false) {
+            newDOMItem = capturedFileTemplate.content.cloneNode(true);
+            newDOMItem.querySelector('div').addEventListener('click', event => {
+                activeFile = child;
+                DOM_CreateDescription(child);
+                DOM_UpdateButtonsState(child);
+            })
+        } else if (child.type === "file" && child.lock === true) {
+            newDOMItem = uncapturedFileTemplate.content.cloneNode(true);
+            newDOMItem.querySelector('div').addEventListener('click', event => {
+                activeFile = child;
+                DOM_CreateDescription(child);
+                DOM_UpdateButtonsState(child);
+            })
+        }
+        let fileNameDOM = newDOMItem.querySelector('p');
+        fileNameDOM.textContent = child.value;
+        filesList.append(newDOMItem);
+    });
+    let childCount = treeNode.children.length;
+    numberOfFilesElement.textContent = `${childCount} ${numeralFormatter(childCount, 'файл', 'файла', 'файлов')}`;
+}
+
+// Создание DOM-элементов описания файла
+function DOM_CreateDescription(treeNode) {
+
+}
+
+// Обновление состояний функциональных кнопок
+function DOM_UpdateButtonsState(treeNode) {
+    //console.log(treeNode);
+
+    // Capture/Uncapture
+    if (treeNode === null) {
+        captureButton.disabled = true;
+        uncaptureButton.disabled = true;
+    } else if (treeNode.lock === false) {
+        captureButton.disabled = true;
+        uncaptureButton.disabled = false;
+    } else if (treeNode.lock === true) {
+        captureButton.disabled = false;
+        uncaptureButton.disabled = true;
+    }
+
+    // Push/Pull
+    if (treeNode === null) {
+        pushButton.disabled = true;
+        pullButton.disabled = true; 
+    } else if (treeNode.lock === false) {
+        pushButton.disabled = true;
+        pullButton.disabled = false;     
+    } else if (treeNode.lock === true) {
+        pushButton.disabled = false;
+        pullButton.disabled = true;   
+    }
+}
+
+
+
 
 // 
 // currentFolder - текущая папка (TreeNode)
