@@ -100,14 +100,8 @@ const uncaptureButton = document.getElementById('uncapture-button');
 const pushButton = document.getElementById('push-button');
 const pullButton = document.getElementById('pull-button');
 
-document.addEventListener('DOMContentLoaded', function() {
-    getRepositoriesList('http://5.165.236.244:9999/api/repositories/list').then(res => console.log(res))
-});
 
 async function getRepositoriesList(url) {
-    const params = new Proxy(new URLSearchParams(window.location.search), {
-        get: (searchParams, prop) => searchParams.get(prop),
-    });
     let request = await axios.get(url, 
         {
             headers: {'X-Session-Id': `${params.session_id}`}
@@ -138,15 +132,19 @@ function fillFoldersRecursively(folder, parentFolder) {
     }
 }
 
+const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+});
 
 // Стартовая функция
 async function createPage() {
-    let repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
-    activeRepo = createRepositoryTree(repoList.repositories[0]);
-    console.log(activeRepo);
-    DOM_CreateRepoList(repoList);
-    DOM_CreateHierarchy(activeRepo.root);
+    repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
+    activeRepo = createRepositoryTree(repoList.repositories[currentRepoID]);
+    currentNode = activeRepo.root;
+
+    DOM_CreateHierarchy(currentNode);
     DOM_UpdateButtonsState(activeFile);
+    DOM_CreateRepoList(repoList);
     dropdownRepoButton.textContent = activeRepo.root.value;
 
     quitButton.addEventListener('click', () => quitPage());
@@ -156,10 +154,25 @@ async function createPage() {
     pullButton.addEventListener('click', () => pullFile());
 }
 
+// Обновление страницы
+async function updatePage() {
+    repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
+    let newVar = repoList.repositories.find(element => element.id === currentRepoID);
+    activeRepo = createRepositoryTree(newVar);
+    currentNode = activeRepo.root;
+    DOM_CreateHierarchy(currentNode);
+    DOM_UpdateButtonsState(activeFile);
+    dropdownRepoButton.textContent = activeRepo.root.value;
+}
+
+// Глобальные переменные
+let repoList;
 let activeRepo;
 let activeFile = null;
+let currentNode = null;
+let currentRepoID = 0;
 
-createPage()
+createPage();
 
 
 // +-------------------------------+
@@ -167,13 +180,51 @@ createPage()
 // +-------------------------------+
 
 // Захват файла
-function captureFile() {
+async function captureFile() {
     console.log(`Capturing: ${activeFile.value}`);
+    let url = "http://5.165.236.244:9999/api/repositories/lock";
+
+    let data = {
+        'repo_id': activeRepo.root.key,
+        'filename': activeFile.value,
+    }
+
+    let response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Session-Id': params.session_id,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    }).then((message) => {
+        updatePage();
+    }).catch((message) => {
+        console.log(message);
+    });
 }
 
 // Снятие захвата
-function uncaptureFile() {
+async function uncaptureFile() {
     console.log(`Uncapturing: ${activeFile.value}`);
+    let url = "http://5.165.236.244:9999/api/repositories/unlock";
+
+    let data = {
+        'repo_id': activeRepo.root.key,
+        'filename': activeFile.value,
+    }
+
+    let response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Session-Id': params.session_id,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    }).then((message) => {
+        updatePage();
+    }).catch((message) => {
+        console.log(message);
+    });
 }
 
 // Положить новую версию в хранилище
@@ -200,7 +251,8 @@ function DOM_CreateRepoList(repoList) {
     repoList.repositories.forEach(repo => {
         const repoDOM = repoTemplate.content.cloneNode(true);
         repoDOM.querySelector('div').addEventListener('click', event => {
-            activeRepo = createRepositoryTree(repo);
+            currentRepoID = repo.id;
+            updatePage();
             DOM_CreateHierarchy(activeRepo.root);
             dropdownRepoButton.textContent = activeRepo.root.value;
         });
@@ -213,6 +265,7 @@ function DOM_CreateRepoList(repoList) {
 // Создание DOM-элементов списка файлов
 function DOM_CreateHierarchy(treeNode) {
     filesList.innerHTML = ''; // Очищаем DOM-дерево
+    currentNode = treeNode;
     activeFile = null;
 
     if (treeNode.parent !== null) {
@@ -220,7 +273,9 @@ function DOM_CreateHierarchy(treeNode) {
         parentDOM.querySelector('div').addEventListener('click', event => {
             DOM_UpdateButtonsState(null);
         });
-        parentDOM.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(treeNode.parent));
+        parentDOM.querySelector('div').addEventListener('dblclick', event => {
+            DOM_CreateHierarchy(treeNode.parent);
+        });
         filesList.append(parentDOM);
     }
     treeNode.children.forEach(child => {
@@ -231,14 +286,14 @@ function DOM_CreateHierarchy(treeNode) {
                 DOM_UpdateButtonsState(null);
             });
             newDOMItem.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(child));
-        } else if (child.type === "file" && child.lock === false) {
+        } else if (child.type === "file" && child.lock === true) {
             newDOMItem = capturedFileTemplate.content.cloneNode(true);
             newDOMItem.querySelector('div').addEventListener('click', event => {
                 activeFile = child;
                 DOM_CreateDescription(child);
                 DOM_UpdateButtonsState(child);
             })
-        } else if (child.type === "file" && child.lock === true) {
+        } else if (child.type === "file" && child.lock === false) {
             newDOMItem = uncapturedFileTemplate.content.cloneNode(true);
             newDOMItem.querySelector('div').addEventListener('click', event => {
                 activeFile = child;
@@ -268,11 +323,11 @@ function DOM_UpdateButtonsState(treeNode) {
         captureButton.disabled = true;
         uncaptureButton.disabled = true;
     } else if (treeNode.lock === false) {
-        captureButton.disabled = true;
-        uncaptureButton.disabled = false;
-    } else if (treeNode.lock === true) {
         captureButton.disabled = false;
         uncaptureButton.disabled = true;
+    } else if (treeNode.lock === true) {
+        captureButton.disabled = true;
+        uncaptureButton.disabled = false;
     }
 
     // Push/Pull
