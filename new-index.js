@@ -1,5 +1,5 @@
 class TreeNode {
-    constructor(key, value = key, type = type, lock = false, parent = null) {
+    constructor(key, value, type, lock = false, parent = null) {
         this.key = key;
         this.value = value;
         this.type = type;
@@ -21,38 +21,38 @@ class TreeNode {
     }
 }
   
-class Tree {
-    constructor(key, value = key, type = 'folder') {
-        this.root = new TreeNode(key, value, type, false);
-    }
+// class Tree {
+//     constructor(key, value = key, type = 'folder') {
+//         this.root = new TreeNode(key, value, type, false);
+//     }
 
-    *preOrderTraversal(node = this.root) {
-        yield node;
-        if (node.children.length) {
-            for (let child of node.children) {
-                yield* this.preOrderTraversal(child);
-            }
-        }
-    }
+//     *preOrderTraversal(node = this.root) {
+//         yield node;
+//         if (node.children.length) {
+//             for (let child of node.children) {
+//                 yield* this.preOrderTraversal(child);
+//             }
+//         }
+//     }
 
-    *postOrderTraversal(node = this.root) {
-        if (node.children.length) {
-            for (let child of node.children) {
-                yield* this.postOrderTraversal(child);
-            }
-        }
-        yield node;
-    }
+//     *postOrderTraversal(node = this.root) {
+//         if (node.children.length) {
+//             for (let child of node.children) {
+//                 yield* this.postOrderTraversal(child);
+//             }
+//         }
+//         yield node;
+//     }
 
-    insert(parentNodeKey, key, value = key, type, lock = false) {
-        for (let node of this.preOrderTraversal()) {
-            if (node.key === parentNodeKey) {
-                node.children.push(new TreeNode(key, value, type, lock, node));
-                return true;
-            }
-        }
-        return false;
-    }
+//     insert(parentNodeKey, key, value = key, type, lock = false) {
+//         for (let node of this.preOrderTraversal()) {
+//             if (node.key === parentNodeKey) {
+//                 node.children.push(new TreeNode(key, value, type, lock, node));
+//                 return true;
+//             }
+//         }
+//         return false;
+//     }
 
     // remove(key) {
     //     for (let node of this.preOrderTraversal()) {
@@ -71,7 +71,7 @@ class Tree {
     //     }
     //     return undefined;
     // }
-}
+//}
 
 function numeralFormatter(number, oneCase, twoFourCase, fiveNineCase) {
     if (10 <= number % 100 && number % 100 <= 20) return fiveNineCase;
@@ -80,10 +80,17 @@ function numeralFormatter(number, oneCase, twoFourCase, fiveNineCase) {
     else return fiveNineCase;
 }
 
+function blobToFile(theBlob, fileName){
+    theBlob.lastModifiedDate = new Date();
+    theBlob.name = fileName;
+    return theBlob;
+}
+
 const repoMenu = document.getElementById('repo-menu');
 const dropdownRepoButton = document.getElementById('dropdown-repo-button');
 const filesList = document.getElementById('files-list');
 
+const emptyTemplate = document.getElementById('empty-template');
 const repoTemplate = document.getElementById('repo-template');
 const parentTemplate = document.getElementById('parent-template');
 const folderTemplate = document.getElementById('folder-template');
@@ -100,6 +107,12 @@ const uncaptureButton = document.getElementById('uncapture-button');
 const pushButton = document.getElementById('push-button');
 const pullButton = document.getElementById('pull-button');
 
+const descriptionFileName = document.getElementById('description-file-name');
+const descriptionWrapper = document.getElementById('description-wrapper');
+
+const descriptionSectionButton =  document.getElementById('description-section-button');
+const codeSectionButton = document.getElementById('code-section-button');
+const commitSectionButton = document.getElementById('commit-section-button');
 
 async function getRepositoriesList(url) {
     let request = await axios.get(url, 
@@ -111,10 +124,14 @@ async function getRepositoriesList(url) {
 }
 
 function createRepositoryTree(repository) {
-    const tree = new Tree(repository.id, repository.name);
-    for (file of repository.files){
-        tree.root.children.push(createTreeNode(file, tree.root))
-    }
+    let tree = fillFolders(new TreeNode(repository.id, repository.name, 'folder', 'false', null), repository);
+    // for (file of repository.files){
+    //     tree.root.children.push(createTreeNode(file, tree.root));
+    //     if (file.type === 'folder') {
+    //         fillFoldersRecursively(file, tree.root);
+    //     }
+    // }
+    //fillFoldersRecursively(repository, rootNode);
     return tree
 }
 
@@ -123,7 +140,22 @@ function createTreeNode(file, parent){
     return treeNode;
 }
 
-function fillFoldersRecursively(folder, parentFolder) {
+function fillFolders(node, repo) {
+    for (let index in repo.files) {
+        
+        let file = repo.files[index];
+        file.id = parseInt(index);
+
+        if (file.type === 'folder') {
+            node.children.push(fillFolders(new TreeNode(file.id, file.name, file.type, file.lock, node), file));
+        } else {
+            node.children.push(new TreeNode(file.id, file.name, file.type, file.lock, node));
+        }
+    }
+    return node;
+}
+
+function fillFoldersRecursively(folder, parentFolder = null) {
     for (let file of folder.files) {
         parentFolder.children.push(createTreeNode(file, parentFolder));
         if (file.type === 'folder') {
@@ -139,30 +171,36 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 // Стартовая функция
 async function createPage() {
     repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
+    console.log(repoList);
     activeRepo = createRepositoryTree(repoList.repositories[currentRepoID]);
-    currentNode = activeRepo.root;
-
+    currentNode = activeRepo;
+    currentRepoID = activeRepo.key;
     DOM_CreateHierarchy(currentNode);
     DOM_UpdateButtonsState(activeFile);
     DOM_CreateRepoList(repoList);
-    dropdownRepoButton.textContent = activeRepo.root.value;
+    dropdownRepoButton.textContent = activeRepo.value;
 
     quitButton.addEventListener('click', () => quitPage());
     captureButton.addEventListener('click', () => captureFile());
     uncaptureButton.addEventListener('click', () => uncaptureFile());
     pushButton.addEventListener('click', () => pushFile());
     pullButton.addEventListener('click', () => pullFile());
+
+    searchField.addEventListener('input', () => {
+        //setTimeout(() => DOM_CreateHierarchy(currentNode, searchField.value), 750);
+        DOM_CreateHierarchy(currentNode, searchField.value);
+    });
 }
 
 // Обновление страницы
 async function updatePage() {
     repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
-    let newVar = repoList.repositories.find(element => element.id === currentRepoID);
-    activeRepo = createRepositoryTree(newVar);
-    currentNode = activeRepo.root;
+    activeRepo = createRepositoryTree(repoList.repositories.find(element => element.id === currentRepoID));
+    currentNode = activeRepo;
+    currentRepoID = activeRepo.key;
     DOM_CreateHierarchy(currentNode);
     DOM_UpdateButtonsState(activeFile);
-    dropdownRepoButton.textContent = activeRepo.root.value;
+    dropdownRepoButton.textContent = activeRepo.value;
 }
 
 // Глобальные переменные
@@ -185,7 +223,7 @@ async function captureFile() {
     let url = "http://5.165.236.244:9999/api/repositories/lock";
 
     let data = {
-        'repo_id': activeRepo.root.key,
+        'repo_id': activeRepo.key,
         'filename': activeFile.value,
     }
 
@@ -209,7 +247,7 @@ async function uncaptureFile() {
     let url = "http://5.165.236.244:9999/api/repositories/unlock";
 
     let data = {
-        'repo_id': activeRepo.root.key,
+        'repo_id': activeRepo.key,
         'filename': activeFile.value,
     }
 
@@ -233,8 +271,27 @@ function pushFile() {
 }
 
 // Взять версию из хранилища
-function pullFile() {
+async function pullFile() {
     console.log(`Pulling: ${activeFile.value}`);
+    let url = "http://5.165.236.244:9999/api/repositories/downloadFile?";
+
+    let response = await fetch(url + new URLSearchParams({
+        'repo_id': activeRepo.key,
+        'filename': activeFile.value, 
+    }), {
+        headers: {
+            'X-Session-Id': params.session_id,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then((res) => { return blobToFile(res.blob(), activeFile.value)})
+    .then((data) => {
+        let a = document.createElement("a");
+        a.href = window.URL.createObjectURL(data);
+        a.download = `${activeFile.value}`;
+        window.URL.revokeObjectURL(url);
+        a.click();
+    });
 }
 
 // Выйти со страницы
@@ -253,8 +310,9 @@ function DOM_CreateRepoList(repoList) {
         repoDOM.querySelector('div').addEventListener('click', event => {
             currentRepoID = repo.id;
             updatePage();
-            DOM_CreateHierarchy(activeRepo.root);
-            dropdownRepoButton.textContent = activeRepo.root.value;
+            DOM_CreateHierarchy(activeRepo);
+            DOM_CreateDescription();
+            dropdownRepoButton.textContent = activeRepo.value;
         });
         let repoNameDOM = repoDOM.querySelector('p');
         repoNameDOM.textContent = repo.name;
@@ -263,59 +321,88 @@ function DOM_CreateRepoList(repoList) {
 }
 
 // Создание DOM-элементов списка файлов
-function DOM_CreateHierarchy(treeNode) {
+function DOM_CreateHierarchy(treeNode, searchedValue = null) {
     filesList.innerHTML = ''; // Очищаем DOM-дерево
     currentNode = treeNode;
     activeFile = null;
-
+    let counter = 0;
+    console.log(treeNode);
     if (treeNode.parent !== null) {
         const parentDOM = parentTemplate.content.cloneNode(true);
         parentDOM.querySelector('div').addEventListener('click', event => {
             DOM_UpdateButtonsState(null);
         });
         parentDOM.querySelector('div').addEventListener('dblclick', event => {
-            DOM_CreateHierarchy(treeNode.parent);
+            DOM_CreateHierarchy(treeNode.parent, searchedValue);
         });
         filesList.append(parentDOM);
     }
     treeNode.children.forEach(child => {
-        let newDOMItem;
-        if (child.type === "folder") {
-            newDOMItem = folderTemplate.content.cloneNode(true);
-            newDOMItem.querySelector('div').addEventListener('click', event => {
-                DOM_UpdateButtonsState(null);
-            });
-            newDOMItem.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(child));
-        } else if (child.type === "file" && child.lock === true) {
-            newDOMItem = capturedFileTemplate.content.cloneNode(true);
-            newDOMItem.querySelector('div').addEventListener('click', event => {
-                activeFile = child;
-                DOM_CreateDescription(child);
-                DOM_UpdateButtonsState(child);
-            })
-        } else if (child.type === "file" && child.lock === false) {
-            newDOMItem = uncapturedFileTemplate.content.cloneNode(true);
-            newDOMItem.querySelector('div').addEventListener('click', event => {
-                activeFile = child;
-                DOM_CreateDescription(child);
-                DOM_UpdateButtonsState(child);
-            })
-        }
+        if (searchedValue === null || child.value.includes(searchedValue)) {
+            let newDOMItem;
+            //console.log(child);
+            counter++;
+            if (child.type === "folder") {
+                newDOMItem = folderTemplate.content.cloneNode(true);
+                newDOMItem.querySelector('div').addEventListener('click', event => {
+                    DOM_UpdateButtonsState(null);
+                });
+                newDOMItem.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(child, searchedValue));
+            } else if (child.type === "file" && child.lock === true) {
+                newDOMItem = capturedFileTemplate.content.cloneNode(true);
+                let boxRow = newDOMItem.querySelector('.box-row');
+                boxRow.addEventListener('click', event => {
+                    activeFile = child;
+                    //event.target.classList.toggle('active-file', true);
+                    DOM_CreateDescriptionSection(child);
+                    DOM_UpdateButtonsState(child);
+                })
+            } else if (child.type === "file" && child.lock === false) {
+                newDOMItem = uncapturedFileTemplate.content.cloneNode(true);
+                let boxRow = newDOMItem.querySelector('.box-row');
+                boxRow.addEventListener('click', event => {
+                    activeFile = child;
+                    //boxRow.classList.toggle('active-file', true);
+                    DOM_CreateDescriptionSection(child);
+                    DOM_UpdateButtonsState(child);
+                })
+            }
         let fileNameDOM = newDOMItem.querySelector('p');
         fileNameDOM.textContent = child.value;
         filesList.append(newDOMItem);
+        }
     });
+    if (counter === 0 && searchedValue !== '') {
+        let emptyDOM = emptyTemplate.content.cloneNode(true);
+        filesList.innerHTML = '';
+        filesList.append(emptyDOM);
+    }
     let childCount = treeNode.children.length;
-    numberOfFilesElement.textContent = `${childCount} ${numeralFormatter(childCount, 'файл', 'файла', 'файлов')}`;
+    numberOfFilesElement.textContent = `${counter} ${numeralFormatter(counter, 'файл', 'файла', 'файлов')}`;
 }
 
-// Создание DOM-элементов описания файла
-function DOM_CreateDescription(treeNode) {
+// Создание DOM-элементов описания выбранного файла
+function DOM_CreateDescriptionSection(activeFile = null) {
+    descriptionWrapper.innerHTML = '';
+    if (activeFile === null) {
+        descriptionFileName.textContent = 'Выберите файл для просмотра информации';
+    } else {
+        descriptionFileName.textContent = activeFile.value;
+    }
+}
+
+// Создание DOM-элементов кода выбранного файла
+function DOM_CreateCodeSection(activeFile = null) {
+
+}
+
+// Создание DOm-элементов коммитов выбранного файла
+function DOM_CreateCommitSection(activeFile = null) {
 
 }
 
 // Обновление состояний функциональных кнопок
-function DOM_UpdateButtonsState(treeNode) {
+function DOM_UpdateButtonsState(treeNode = null) {
     //console.log(treeNode);
 
     // Capture/Uncapture

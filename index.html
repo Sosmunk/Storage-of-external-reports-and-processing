@@ -77,30 +77,40 @@
                             <p>Files_Count</p>   
                         </div>
                         <div class="box-container" id="files-list">
+                            <template id="empty-template">
+                                <div class="d-flex flex-column align-items-center justify-content-center mt-5" style="opacity: 0.8;">
+                                    <img src="./src/folder1.png" width="320px">
+                                    <h2>Ничего не найдено!</h2>
+                                </div>
+                            </template>
                             <template id="parent-template">
                                 <div class="box-row folder align-items-center">
-                                    <img src="./src/folder.png" width="20px" height="20px">
+                                    <img src="./src/folder.png" width="20px" height="20px" class="mr-2">
                                     <p>..</p>
                                 </div>
                             </template>
                             <template id="folder-template">
                                 <div class="box-row folder align-items-center">
-                                    <img src="./src/folder.png" width="20px" height="20px">
+                                    <img src="./src/folder.png" width="20px" height="20px" class="mr-2">
                                     <p>Folder_Name</p>
                                 </div>
                             </template>
                             <template id="uncaptured-file-template">
                                 <div class="box-row file align-items-center">
-                                    <img src="./src/file.png" width="20px" height="20px">
-                                    <p>File_Name</p>
-                                    <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
+                                    <img src="./src/file.png" width="20px" height="20px" class="mr-2">
+                                    <p style="width: 400px">File_Name</p>
+                                    <span class="m-auto" style="color: #808080;">12.12.2022 16:17</span>
+                                    <span>Без захвата</span>
+                                    <img src="./src/unlock.png" width="24px">
                                 </div>
                             </template>
                             <template id="captured-file-template">
                                 <div class="box-row file align-items-center">
-                                    <img src="./src/file.png" width="20px" height="20px">
-                                    <p>style.css</p>
-                                    <span>Захвачен<img src="./src/padlock.png" width="24px"></span>
+                                    <img src="./src/file.png" width="20px" height="20px" class="mr-2">
+                                    <p style="width: 400px">style.css</p>
+                                    <span class="m-auto" style="color: #808080;">Admin</span>
+                                    <span>Захвачен</span>
+                                    <img src="./src/padlock.png" width="24px">
                                 </div>
                             </template>
                             <div class="box-row folder align-items-center">
@@ -143,38 +153,45 @@
                     <div class="d-flex justify-content-between align-items-baseline description-header" id="description-header">
                         <h4 id="description-file-name">Выберите файл для просмотра информации</h4>
                     </div>
-                    <table class="table table-striped table-bordered">
-                        <tbody>
-                            <tr>
-                                <th>Текущее состояние</th>
-                                <td>Без захвата</td>
-                            </tr>
-                            <tr>
-                                <th>Время снятия захвата</th>
-                                <td>21.11.2022 — 20:46:13</td>
-                            </tr>
-                            <tr>
-                                <th>Последний пользователь</th>
-                                <td>Шунин Антон<br>shunin-anton@otp.ru</td>
-                            </tr>
-                            <tr>
-                                <th>Последний коммит</th>
-                                <td>21.11.2022 — 20:45:45</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Кем сделан</th>
-                                <td>Шунин Антон<br>shunin-anton@otp.ru</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Дата создания</th>
-                                <td>10.08.2020</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Создатель</th>
-                                <td>Владимир<br>vladimir@vl-ostrov</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="selector d-flex px-2 pb-2">
+                        <button class="selector-item" id="description-section-button">Подробности</button>
+                        <button class="selector-item" id="code-section-button">Код</button>
+                        <button class="selector-item" id="commit-section-button">Список коммитов</button>
+                    </div>
+                    <div id="description-wrapper">
+                        <table class="table table-striped table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>Текущее состояние</th>
+                                    <td>Без захвата</td>
+                                </tr>
+                                <tr>
+                                    <th>Время снятия захвата</th>
+                                    <td>21.11.2022 — 20:46:13</td>
+                                </tr>
+                                <tr>
+                                    <th>Последний пользователь</th>
+                                    <td>Шунин Антон<br>shunin-anton@otp.ru</td>
+                                </tr>
+                                <tr>
+                                    <th>Последний коммит</th>
+                                    <td>21.11.2022 — 20:45:45</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Кем сделан</th>
+                                    <td>Шунин Антон<br>shunin-anton@otp.ru</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Дата создания</th>
+                                    <td>10.08.2020</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Создатель</th>
+                                    <td>Владимир<br>vladimir@vl-ostrov</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>

@@ -21,6 +21,8 @@ async function sendRequest() {
       .then(function (response) {
         // обработка успешного запроса
         //showMessage(response.data.message); 
+        
+        //console.log(document.cookie);
         window.location.replace(`./index.html?session_id=${encodeURIComponent(response.data.session_id)}`);
       })
       .catch(function (error) {
