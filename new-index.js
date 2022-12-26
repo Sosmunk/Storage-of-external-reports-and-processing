@@ -1,10 +1,11 @@
 class TreeNode {
-    constructor(key, value, type, lock = false, parent = null) {
+    constructor(key, value, type, lock = false, parent = null, last_commit = null) {
         this.key = key;
         this.value = value;
         this.type = type;
         this.lock = lock;
         this.parent = parent;
+        this.last_commit = last_commit;
         this.children = [];
     }
   
@@ -114,24 +115,23 @@ const descriptionSectionButton =  document.getElementById('description-section-b
 const codeSectionButton = document.getElementById('code-section-button');
 const commitSectionButton = document.getElementById('commit-section-button');
 
+const fileInput = document.getElementById('file-input');
+const repoIdInput = document.getElementById('repo_id-input');
+const filenameInput = document.getElementById('filename-input');
+const commitTextInput = document.getElementById('commit-text-input');
+const sendCommitButton = document.getElementById('send-commit-button');
+
 async function getRepositoriesList(url) {
     let request = await axios.get(url, 
         {
-            headers: {'X-Session-Id': `${params.session_id}`}
+            headers: {'X-Session-Id': `${params.session_id}`,}
         })
     let response = request.data;
     return response
 }
 
 function createRepositoryTree(repository) {
-    let tree = fillFolders(new TreeNode(repository.id, repository.name, 'folder', 'false', null), repository);
-    // for (file of repository.files){
-    //     tree.root.children.push(createTreeNode(file, tree.root));
-    //     if (file.type === 'folder') {
-    //         fillFoldersRecursively(file, tree.root);
-    //     }
-    // }
-    //fillFoldersRecursively(repository, rootNode);
+    let tree = fillFolders(new TreeNode(repository.id, repository.name, 'folder', null, null), repository);
     return tree
 }
 
@@ -142,14 +142,13 @@ function createTreeNode(file, parent){
 
 function fillFolders(node, repo) {
     for (let index in repo.files) {
-        
         let file = repo.files[index];
         file.id = parseInt(index);
 
         if (file.type === 'folder') {
             node.children.push(fillFolders(new TreeNode(file.id, file.name, file.type, file.lock, node), file));
         } else {
-            node.children.push(new TreeNode(file.id, file.name, file.type, file.lock, node));
+            node.children.push(new TreeNode(file.id, file.name, file.type, file.lock, node, file.last_commit));
         }
     }
     return node;
@@ -170,6 +169,7 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 
 // Стартовая функция
 async function createPage() {
+    //axios.defaults.withCredentials = true;
     repoList = await getRepositoriesList("http://5.165.236.244:9999/api/repositories/list");
     console.log(repoList);
     activeRepo = createRepositoryTree(repoList.repositories[currentRepoID]);
@@ -186,10 +186,14 @@ async function createPage() {
     pushButton.addEventListener('click', () => pushFile());
     pullButton.addEventListener('click', () => pullFile());
 
+    //sendCommitButton.addEventListener('click', () => pushFile());
+
     searchField.addEventListener('input', () => {
         //setTimeout(() => DOM_CreateHierarchy(currentNode, searchField.value), 750);
         DOM_CreateHierarchy(currentNode, searchField.value);
     });
+
+
 }
 
 // Обновление страницы
@@ -266,8 +270,38 @@ async function uncaptureFile() {
 }
 
 // Положить новую версию в хранилище
-function pushFile() {
+async function pushFile() {
     console.log(`Pushing: ${activeFile.value}`);
+    let url = "http://5.165.236.244:9999/api/repositories/pushFile";
+    filenameInput.value = activeFile.value;
+    repoIdInput.value = activeRepo.key;
+    document.cookie = `X-Session-Id=${params.session_id}`;
+    //let reader = new FileReader();
+    // reader.onload = function(e) {
+    //     console.log(reader.readAs(fileInput.files[0]));
+	// };
+    // reader.onerror = function(e) {
+	// 	console.log('Error : ' + e.type);
+	// };
+    // let data = {
+    //     'repo_id': activeRepo.key,
+    //     'filename': activeFile.value,
+    //     'commit_message': commitTextInput.value,
+    //     'file': reader.readAsText(fileInput.files[0]),
+    // }
+
+    // let response = await fetch(url, {
+    //     method: "POST",
+    //     headers: {
+    //         'X-Session-Id': params.session_id,
+    //         'Content-Type': 'multipart/form-data',
+    //     },
+    //     body: JSON.stringify(data),
+    // })
+    // .then((res) => { console.log(res); })
+    // .catch((message) => {
+    //     console.log(message);
+    // });
 }
 
 // Взять версию из хранилища
@@ -311,7 +345,7 @@ function DOM_CreateRepoList(repoList) {
             currentRepoID = repo.id;
             updatePage();
             DOM_CreateHierarchy(activeRepo);
-            DOM_CreateDescription();
+            //DOM_CreateDescription();
             dropdownRepoButton.textContent = activeRepo.value;
         });
         let repoNameDOM = repoDOM.querySelector('p');
@@ -348,8 +382,9 @@ function DOM_CreateHierarchy(treeNode, searchedValue = null) {
                     DOM_UpdateButtonsState(null);
                 });
                 newDOMItem.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(child, searchedValue));
-            } else if (child.type === "file" && child.lock === true) {
+            } else if (child.type === "file" && child.lock !== null) {
                 newDOMItem = capturedFileTemplate.content.cloneNode(true);
+                newDOMItem.querySelector('.additional-info').textContent = child.lock.user;
                 let boxRow = newDOMItem.querySelector('.box-row');
                 boxRow.addEventListener('click', event => {
                     activeFile = child;
@@ -357,8 +392,9 @@ function DOM_CreateHierarchy(treeNode, searchedValue = null) {
                     DOM_CreateDescriptionSection(child);
                     DOM_UpdateButtonsState(child);
                 })
-            } else if (child.type === "file" && child.lock === false) {
+            } else if (child.type === "file" && child.lock === null) {
                 newDOMItem = uncapturedFileTemplate.content.cloneNode(true);
+                newDOMItem.querySelector('.additional-info').textContent = new Date(child.last_commit.timestamp * 1000).toLocaleString('en-GB');
                 let boxRow = newDOMItem.querySelector('.box-row');
                 boxRow.addEventListener('click', event => {
                     activeFile = child;
@@ -403,16 +439,16 @@ function DOM_CreateCommitSection(activeFile = null) {
 
 // Обновление состояний функциональных кнопок
 function DOM_UpdateButtonsState(treeNode = null) {
-    //console.log(treeNode);
+    console.log(treeNode);
 
     // Capture/Uncapture
     if (treeNode === null) {
         captureButton.disabled = true;
         uncaptureButton.disabled = true;
-    } else if (treeNode.lock === false) {
+    } else if (treeNode.lock === null) {
         captureButton.disabled = false;
         uncaptureButton.disabled = true;
-    } else if (treeNode.lock === true) {
+    } else if (treeNode.lock !== null) {
         captureButton.disabled = true;
         uncaptureButton.disabled = false;
     }
@@ -421,17 +457,14 @@ function DOM_UpdateButtonsState(treeNode = null) {
     if (treeNode === null) {
         pushButton.disabled = true;
         pullButton.disabled = true; 
-    } else if (treeNode.lock === false) {
+    } else if (treeNode.lock === null) {
         pushButton.disabled = true;
         pullButton.disabled = false;     
-    } else if (treeNode.lock === true) {
+    } else if (treeNode.lock !== null) {
         pushButton.disabled = false;
         pullButton.disabled = true;   
     }
 }
-
-
-
 
 // 
 // currentFolder - текущая папка (TreeNode)
