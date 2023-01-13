@@ -20,20 +20,17 @@ async function sendRequest() {
       )
       .then(function (response) {
         // обработка успешного запроса
-        //showMessage(response.data.message); 
-        
-        //console.log(document.cookie);
+        document.cookie = `username=${response.data.user.username};`;
+        document.cookie = `real_name=${response.data.user.real_name};`;
+        document.cookie = `role_id=${response.data.user.role_id};`
+        document.cookie = `id=${response.data.user.id};`
+        document.cookie = 'path=/';
         window.location.replace(`./index.html?session_id=${encodeURIComponent(response.data.session_id)}`);
       })
       .catch(function (error) {
         // обработка ошибки
-        showMessage(error.response.data.message);
         emailField.classList.toggle('is-invalid', true);
         passwordField.classList.toggle('is-invalid', true);
       });
     //console.log(request)
-}
-
-function showMessage(message) {
-    console.log(message);
 }

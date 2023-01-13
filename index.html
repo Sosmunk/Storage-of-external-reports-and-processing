@@ -5,21 +5,17 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link 
-            rel="stylesheet" 
-            href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" 
-            integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" 
-            crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
         <link rel="stylesheet" href="./styles/style.css">
-        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
         <script defer src="./new-index.js"></script>
     </head>
     <body>
         <header class="main-header p-3" style="background-color: #6a3642; box-shadow: 0 -6px 10px 5px rgba(0,0,0,0.75);">
             <div class="d-flex justify-content-start align-items-end">
                 <div class="dropdown mr-auto ml-2">
-                    <button class="btn dropdown-toggle" style="border-radius: 5px" type="button" id="dropdown-repo-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn dropdown-toggle text-left" style="border-radius: 5px; min-width: 220px;" type="button" id="dropdown-repo-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Список репозиториев
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownRepoButton" id="repo-menu">
@@ -28,24 +24,17 @@
                                 <p style="margin: 0; padding-bottom: 3px;">Repository Name</p>
                             </div>
                         </template>
-                        <div class="dropdown-divider"></div>
-                        <h6 class="dropdown-header">Администрирование</h6>
-                        <button class="dropdown-item" href="#">Добавить новый репозиторий</button>
-                        <button class="dropdown-item" href="#">Удалить репозиторий</button>
+                        <div id="adminRepoActions" hidden>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Администрирование</h6>
+                            <button class="dropdown-item" href="#" id="create-new-repo-button" data-toggle="modal" data-target="#createRepoModal">Создать новый репозиторий</button>
+                            <button class="dropdown-item" href="#" id="create-new-folder-button" data-toggle="modal" data-target="#createFolderModal">Создать новую папку</button>
+                        </div>
                     </div>
                 </div>
-                <div class="dropdown mr-3">
-                    <button class="btn dropdown-toggle" style="border-radius: 5px" type="button" id="dropdown-role-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Администратор
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownRepoButton">
-                        <a class="dropdown-item" href="#">Пользователь</a>
-                        <a class="dropdown-item" href="#">Администратор</a>
-                        <div class="dropdown-divider"></div>
-                        <h6 class="dropdown-header">Администрирование</h6>
-                        <a class="dropdown-item" href="#">Снять захват</a>
-                    </div>
-                </div>
+                <button type="button" class="btn mr-3" style="border-radius: 5px;" id="userInfoButton">
+                    User_role
+                </button>
                 <div class="user-panel">
                     <button class="btn secondary-btn" id="quit-button">
                         Выйти
@@ -59,10 +48,10 @@
         <main>
             <div class="menu d-flex mb-0">
                 <div class="btn-group p-3 mr-auto" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-light" id="capture-button" disabled="true">Захват</button>
-                    <button type="button" class="btn btn-light" id="uncapture-button" disabled="true">Отмена захвата</button>
-                    <button type="button" class="btn btn-light" id="push-button" disabled="true" data-toggle="modal" data-target="#fileInputModal">Поместить в хранилище</button>
-                    <button type="button" class="btn btn-light" id="pull-button" disabled="true">Получить версию из хранилища</button>
+                    <button type="button" class="btn btn-light" id="capture-button" disabled>Захват</button>
+                    <button type="button" class="btn btn-light" id="uncapture-button" disabled>Отмена захвата</button>
+                    <button type="button" class="btn btn-light" id="push-button" data-toggle="modal" data-target="#fileInputModal">Поместить в хранилище</button>
+                    <button type="button" class="btn btn-light" id="pull-button" disabled>Получить версию из хранилища</button>
                 </div>
                 <div class="input-group p-3 search">
                     <input type="text" class="form-control" style="border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.25);" placeholder="Поиск..." aria-label="Search" aria-describedby="basic-addon1" id="search-field">
@@ -70,7 +59,7 @@
             </div>
             <div class="workspace rounded px-3">
                 <div class="hierarchy">
-                    <div class="box">
+                    <div class="box" style="height: 100%; width: 100%">
                         <div class="box-header d-flex justify-content-between align-items-baseline" id="files-list-header">
                             <h4>Список файлов</h4>
                             </nav>
@@ -78,7 +67,7 @@
                         </div>
                         <div class="box-container" id="files-list">
                             <template id="empty-template">
-                                <div class="d-flex flex-column align-items-center justify-content-center mt-5" style="opacity: 0.8;">
+                                <div class="d-flex flex-column align-items-center justify-content-center mt-5" style="opacity: 0.85;">
                                     <img src="./src/folder1.png" width="320px">
                                     <h2>Ничего не найдено!</h2>
                                 </div>
@@ -113,39 +102,6 @@
                                     <img src="./src/padlock.png" width="24px">
                                 </div>
                             </template>
-                            <div class="box-row folder align-items-center">
-                                <img src="./src/folder.png" width="20px" height="20px">
-                                <p>src</p>
-                            </div>
-                            <div class="box-row folder align-items-center">
-                                <img src="./src/folder.png" width="20px" height="20px">
-                                <p>bin</p>
-                            </div>
-                            <div class="box-row file align-items-center">
-                                <img src="./src/file.png" width="20px" height="20px">
-                                <p>index.html</p>
-                                <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
-                            </div>
-                            <div class="box-row file align-items-center">
-                                <img src="./src/file.png" width="20px" height="20px">
-                                <p>script.js</p>
-                                <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
-                            </div>
-                            <div class="box-row file align-items-center">
-                                <img src="./src/file.png" width="20px" height="20px">
-                                <p>style.css</p>
-                                <span>Захвачен<img src="./src/padlock.png" width="24px"></span>
-                            </div>
-                            <div class="box-row file align-items-center">
-                                <img src="./src/file.png" width="20px" height="20px">
-                                <p>vacancies.csv</p>
-                                <span>Захвачен<img src="./src/padlock.png" width="24px"></span>
-                            </div>
-                            <div class="box-row file align-items-center">
-                                <img src="./src/file.png" width="20px" height="20px">
-                                <p>main.py</p>
-                                <span>Без захвата<img src="./src/unlock.png" width="24px"></span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -158,45 +114,87 @@
                         <button class="selector-item" id="code-section-button">Код</button>
                         <button class="selector-item" id="commit-section-button">Список коммитов</button>
                     </div>
-                    <div id="description-wrapper">
-                        <table class="table table-striped table-bordered">
-                            <tbody>
-                                <tr>
-                                    <th>Текущее состояние</th>
-                                    <td>Без захвата</td>
-                                </tr>
-                                <tr>
-                                    <th>Время снятия захвата</th>
-                                    <td>21.11.2022 — 20:46:13</td>
-                                </tr>
-                                <tr>
-                                    <th>Последний пользователь</th>
-                                    <td>Шунин Антон<br>shunin-anton@otp.ru</td>
-                                </tr>
-                                <tr>
-                                    <th>Последний коммит</th>
-                                    <td>21.11.2022 — 20:45:45</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Кем сделан</th>
-                                    <td>Шунин Антон<br>shunin-anton@otp.ru</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Дата создания</th>
-                                    <td>10.08.2020</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Создатель</th>
-                                    <td>Владимир<br>vladimir@vl-ostrov</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="description-wrapper" style="width: 600px; height: 460px; overflow-y: scroll;">
+                        <template id="unlocked-file-description">
+                            <table class="table table-striped table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Текущее состояние</th>
+                                        <td class="state">Без захвата</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Последний коммит</th>
+                                        <td class="last-commit-timestamp">01/01/1970, 00:00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Кем сделан</th>
+                                        <td class="last-commit-creator">Name Surname<br>NameSurname@mail.ru</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Дата создания</th>
+                                        <td class="first-commit-timestamp">01/01/1970, 00:00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Создатель</th>
+                                        <td class="first-commit-creator">Name Surname<br>NameSurname@mail.ru</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template id="locked-file-description">
+                            <table class="table table-striped table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Текущее состояние</th>
+                                        <td class="state">Захвачен</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Кем захвачен</th>
+                                        <td class="locked-by">Name Surname<br>NameSurname@mail.ru</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Последний коммит</th>
+                                        <td class="last-commit-timestamp">01/01/1970, 00:00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Кем сделан</th>
+                                        <td class="last-commit-creator">Name Surname<br>NameSurname@mail.ru</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Дата создания</th>
+                                        <td class="first-commit-timestamp">01/01/1970, 00:00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Создатель</th>
+                                        <td class="first-commit-creator">Name Surname<br>NameSurname@mail.ru</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template id="file-commits-table-template">
+                            <table class="table table-striped table-bordered">
+                                <tbody class="table-part">
+                                    <tr>
+                                        <th>Дата и время</th>
+                                        <th>Описание</th>
+                                        <th>Пользователь</th>
+                                    </tr>                  
+                                </tbody>
+                            </table>
+                        </template>
+                        <template id="file-commit-template">
+                            <tr>
+                                <td class="commit-timestamp">01/01/1970, 00:00:00</td>
+                                <td class="commit-message">Commit_Message</td>
+                                <td class="commit-user">Username</td>
+                            </tr>
+                        </template>
                     </div>
                 </div>
             </div>
         </main>
         <div class="modal fade" id="fileInputModal" tabindex="-1" role="dialog" aria-labelledby="fileInputModalLabel" aria-hidden="true">
-            <form action="http://5.165.236.244:9999/api/repositories/pushFile" method="post" enctype="multipart/form-data"  >
+            <form action="http://5.165.236.244:9999/api/repositories/pushFile" method="post" enctype="multipart/form-data">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -206,30 +204,103 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div class="custom-file mb-3" id="customFile" lang="ru">
-                                <input type="file" class="custom-file-input" name="file" id="file-input" aria-labelledby="fileInputModalLabel" accept=".epf,.erf">
-                                <label class="custom-file-label" for="file-input">
-                                   Название файла...
-                                </label>
+                            <div class="d-none">
+                                <label for="repo_id-input">repo_id*</label>
+                                <input type="number" name="repo_id" id="repo_id-input" required>
                             </div>
-                            <div class="input-group mb-1">
+                                <div class="custom-file mb-2" id="customFile" lang="ru">
+                                    <input type="file" class="custom-file-input" name="file" id="file-input" aria-labelledby="fileInputModalLabel" accept=".epf,.erf" required>
+                                    <label class="custom-file-label" for="file-input" id="file-input-label">Файл для загрузки...</label>   
+                                </div>
+                            <div class="form-check mb-3 ml-2">
+                                <input type="checkbox" class="form-check-input" id="isNewFileCheck">
+                                <input type="number" class="d-none" name="new" id="newFileNumber">
+                                <label class="form-check-label" for="isNewFileCheck">Новый файл</label>
+                            </div> 
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Название файла</span>
+                                </div>
+                                <input class="form-control" type="text" name="filename" id="filename-input" aria-describedby="filenameInputHelp" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="file-extension">.epf</span>
+                                </div>
+                                <small id="filenameInputHelp" class="form-text text-muted">Будьте внимательны! При обновлении существующего файла название должно оставаться прежним!</small>
+                            </div> 
+                            <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Описание коммита</span>
                                 </div>
                                 <input type="text" class="form-control" id="commit-text-input" name="commit_message">
-                            </div>                             
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                             <button type="submit" class="btn btn-primary" id="send-commit-button">Создать коммит</button>
-                            <input type="number" name="repo_id" id="repo_id-input" required>
-                            <input type="text" name="filename" id="filename-input" required>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal fade" id="createRepoModal" tabindex="-1" role="dialog" aria-labelledby="createRepoModalLabel" aria-hidden="true">
+            <form action="http://5.165.236.244:9999/api/repositories/createRepository" method="get" enctype="multipart/form-data">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createRepoModalLabel">Создание нового репозитория</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="repoFilename-input">Название репозитория в интерфейсе</label>
+                                <input type="text" name="name" class="form-control" id="repoFilename-input" placeholder="Например: ИП Иванов" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="foldername-input">Название папки нового проекта</label>
+                                <input type="text" name="folder_name" class="form-control" id="foldername-input" placeholder="Например: IP_Ivanov" aria-describedby="foldernameHelp" required>
+                                <small id="foldernameHelp" class="form-text text-muted">Название папки для нового проекта рекомендуется задавать латиницей</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                            <button type="button" class="btn btn-primary" id="create-new-repo-submit" data-dismiss="modal">Создать репозиторий</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+            <form action="http://5.165.236.244:9999/api/repositories/createFolder" method="get" enctype="multipart/form-data">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createFolderModalLabel">Создание новой папки</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-none">
+                                <label for="repo_id-input">repo_id*</label>
+                                <input type="number" name="repo_id" id="create-folder-repo_id-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="foldername-input">Путь до содержимого папки из корневой директории</label>
+                                <input type="text" name="path" class="form-control" id="create-folder-path-input" placeholder="Например: создание папки Запросы в папке Общие --> Запросы/Общие" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                            <button type="button" class="btn btn-primary" id="create-new-folder-submit" data-dismiss="modal">Создать папку</button>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js" integrity="sha384-qlmct0AOBiA2VPZkMY3+2WqkHtIQ9lSdAsAn5RUJD/3vA5MKDgSGcdmIv4ycVxyn" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     </body>
