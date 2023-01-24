@@ -1,3 +1,8 @@
+// +-------------------+
+// | Работа с классами |
+// +-------------------+
+
+// Класс файлового узла
 class TreeNode {
     constructor(key, value, type, lock = false, parent = null, last_commit = null) {
         this.key = key;
@@ -23,21 +28,27 @@ class TreeNode {
 }
 
 
+// +-------------------------+
+// | Вспомогательные функции |
+// +-------------------------+
+
 function numeralFormatter(number, oneCase, twoFourCase, fiveNineCase) {
+    // Изменение окончаний числительных в зависимости от значения
     if (10 <= number % 100 && number % 100 <= 20) return fiveNineCase;
     else if (number % 10 === 1) return oneCase;
     else if (2 <= number % 10 && number % 10 <= 4) return twoFourCase;
     else return fiveNineCase;
 }
 
-function blobToFile(theBlob, fileName){
+function blobToFile(theBlob, fileName) {
+    // Превращение файлоподобного объекта в файл
     theBlob.lastModifiedDate = new Date();
     theBlob.name = fileName;
     return theBlob;
 }
 
-
 function getCookie(c_name) {
+    // Получение значения указанной cookie-переменной
     if (document.cookie.length > 0) {
         c_start = document.cookie.indexOf(c_name + "=");
         if (c_start != -1) {
@@ -52,9 +63,156 @@ function getCookie(c_name) {
     return "";
 }
 
+function readTextFile(file) {
+    // Чтение текстового содержимого указанного файла
+    let rawFile = new XMLHttpRequest();
+    let allText = '';
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                allText = rawFile.responseText;
+            }
+        }
+    }
+    rawFile.send(null);
+    return allText;
+}
 
-const ip = "5.165.236.244:9999";
+// sendData is our main function
+function sendData() {
+    // If there is a selected file, wait until it is read
+    // If there is not, delay the execution of the function
+    if (!fileContent.binary && fileContent.dom.files.length > 0) {
+    setTimeout(sendData, 10);
+    return;
+    }
 
+    // To construct our multipart form data request,
+    // We need an XMLHttpRequest instance
+    const XHR = new XMLHttpRequest();
+
+    // We need a separator to define each part of the request
+    const boundary = "blob";
+
+    // Store our body request in a string.
+    let data = "";
+
+    data += `--${boundary}\r\n`;
+
+    data += `content-disposition: form-data; name="repo_id"\r\n`;
+    // There's a blank line between the metadata and the data
+    data += '\r\n';
+
+    // Append the text data to our body's request
+    data += activeRepo.key + "\r\n";
+
+
+    // So, if the user has selected a file
+    if (fileContent.dom.files[0]) {
+    // Start a new part in our body's request
+        data += `--${boundary}\r\n`;
+
+        // Describe it as form data
+        data += `content-disposition: form-data; name="file"; filename="${fileContent.dom.files[0].name}"\r\n`;
+        // And the MIME type of the file
+        data += `Content-Type: ${fileContent.dom.files[0].type}\r\n`;
+
+        // There's a blank line between the metadata and the data
+        data += '\r\n';
+
+        // Append the binary data to our body's request
+        data += fileContent.binary + '\r\n';
+    }
+
+    data += `--${boundary}\r\n`;
+
+    // Say it's form data, and name it
+    data += `content-disposition: form-data; name="new"\r\n`;
+    // There's a blank line between the metadata and the data
+    data += '\r\n';
+
+    // Append the text data to our body's request
+    data += newFileNumber.value + "\r\n";
+
+    // Text data is simpler
+    // Start a new part in our body's request
+    data += `--${boundary}\r\n`;
+
+    // Say it's form data, and name it
+    data += `content-disposition: form-data; name="filename"\r\n`;
+    // There's a blank line between the metadata and the data
+    data += '\r\n';
+
+    // Append the text data to our body's request
+    if (currentPath === '')
+        data += `${currentPath}` + filenameInput.value + "\r\n";
+    else
+        data += `${currentPath}/` + filenameInput.value + "\r\n";
+
+    data += `--${boundary}\r\n`;
+
+    // Say it's form data, and name it
+    data += `content-disposition: form-data; name="commit_message"\r\n`;
+    // There's a blank line between the metadata and the data
+    data += '\r\n';
+
+    data += commitTextInput.value + "\r\n";
+
+    // Once we are done, "close" the body's request
+
+    data += `--${boundary}--`;
+
+    // Define what happens on successful data submission
+    XHR.addEventListener('load', (event) => {
+        updatePage();
+    });
+
+    // Define what happens in case of an error
+    XHR.addEventListener('error', (event) => {
+        alert('Что-то пошло не так!');
+    });
+
+    // Set up our request
+    XHR.open('POST', `http://${ip}/api/repositories/pushFile`);
+
+    // Add the required HTTP header to handle a multipart form data POST request
+    XHR.setRequestHeader('Content-Type', `multipart/form-data; boundary=${boundary}`);
+
+    // Send the data
+    XHR.send(data);
+}
+
+
+// +-----------------------+
+// | Объявление переменных |
+// +-----------------------+
+
+// Глобальные переменные
+let repoList;
+let activeRepo;
+let activeFile = null;
+let currentNode = null;
+let currentRepoID = 0;
+let activeFileCommits = []; 
+let currentPath = '';
+
+let userID = getCookie('id');
+let userRoleID = getCookie('role_id');
+let userUsername = getCookie('username');
+let userRealName = getCookie('real_name');
+
+const ip = readTextFile("ip.cfg");
+
+const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+});
+
+
+// Переменные DOM-элементов страницы
 const repoMenu = document.getElementById('repo-menu');
 const dropdownRepoButton = document.getElementById('dropdown-repo-button');
 const filesList = document.getElementById('files-list');
@@ -105,64 +263,48 @@ const userInfoButton = document.getElementById('userInfoButton');
 const adminRepoActions = document.getElementById('adminRepoActions');
 
 const createNewRepoButton = document.getElementById('create-new-repo-button');
+const removeRepoButton = document.getElementById('remove-repo-button');
 const repoFilenameInput = document.getElementById('repoFilename-input');
 const foldernameInput = document.getElementById('foldername-input');
 const submitNewRepo = document.getElementById('create-new-repo-submit');
 
 const createNewFolderButton = document.getElementById('create-new-folder-button');
+const removeFolderButton = document.getElementById('remove-folder-button');
 const folderCreateRepoID_Input = document.getElementById('create-folder-repo_id-input');
 const folderCreatePath_Input = document.getElementById('create-folder-path-input');
 const submitNewFolder = document.getElementById('create-new-folder-submit');
 
-async function getRepositoriesList(url) {
-    let request = await axios.get(url, 
-        {
-            headers: {'X-Session-Id': `${params.session_id}`,}
-        })
-    let response = request.data;
-    return response
-}
+const fileContent = {
+    dom: fileInput,
+    binary: null,
+};
 
-function createRepositoryTree(repository) {
-    let tree = fillFolders(new TreeNode(repository.id, repository.name, 'folder', null, null), repository);
-    return tree
-}
-
-function createTreeNode(file, parent){
-    let treeNode = new TreeNode(file.id, file.name, file.type, file.lock, parent);
-    return treeNode;
-}
-
-function fillFolders(node, repo) {
-    for (let index in repo.files) {
-        let file = repo.files[index];
-        file.id = parseInt(index);
-
-        if (file.type === 'folder') {
-            node.children.push(fillFolders(new TreeNode(file.id, file.name, file.type, file.lock, node), file));
-        } else {
-            node.children.push(new TreeNode(file.id, file.name, file.type, file.lock, node, file.last_commit));
-        }
-    }
-    return node;
-}
-
-function fillFoldersRecursively(folder, parentFolder = null) {
-    for (let file of folder.files) {
-        parentFolder.children.push(createTreeNode(file, parentFolder));
-        if (file.type === 'folder') {
-            fillFoldersRecursively(file, folder);
-        }
-    }
-}
-
-const params = new Proxy(new URLSearchParams(window.location.search), {
-    get: (searchParams, prop) => searchParams.get(prop),
+const reader = new FileReader();
+reader.addEventListener("load", () => {
+    fileContent.binary = reader.result;
 });
 
-// Стартовая функция
+// At page load, if a file is already selected, read it.
+if (fileContent.dom.files[0]) {
+    reader.readAsBinaryString(fileContent.dom.files[0]);
+}
+
+// If not, read the file once the user selects it.
+fileContent.dom.addEventListener("change", () => {
+    if (reader.readyState === FileReader.LOADING) {
+        reader.abort();
+    }
+
+    reader.readAsBinaryString(fileContent.dom.files[0]);
+});
+
+
+// +-----------------------------+
+// | Объявление основных функций |
+// +-----------------------------+
+
+// Стартовая функция 
 async function createPage() {
-    //axios.defaults.withCredentials = true;
     repoList = await getRepositoriesList(`http://${ip}/api/repositories/list`);
     console.log(repoList);
     activeRepo = createRepositoryTree(repoList.repositories[currentRepoID]);
@@ -183,12 +325,8 @@ async function createPage() {
     sendCommitButton.addEventListener('click', () => {
         filenameInput.value = filenameInput.value + fileExtension.textContent;
     });
-    //sendFileForm.action = `http://${ip}/api/repositories/pushFile`;
-
-    $("#sendFileForm").ajaxForm({url: `http://${ip}/api/repositories/pushFile`, type: 'post'})
 
     searchField.addEventListener('input', () => {
-        //setTimeout(() => DOM_CreateHierarchy(currentNode, searchField.value), 750);
         DOM_CreateHierarchy(currentNode, searchField.value);
     });
 
@@ -208,8 +346,20 @@ async function createPage() {
         DOM_FillNewRepoModal();
     });
 
+    removeRepoButton.addEventListener('click', () => {
+        if (confirm('Вы действительно хотите удалить текущий репозиторий? Действие невозможно отменить!')) {
+            removeRepo();
+        }
+    });
+
     createNewFolderButton.addEventListener('click', () => {
         DOM_FillNewFolderModal();
+    });
+
+    removeFolderButton.addEventListener('click', () => {
+        if (confirm('Вы действительно хотите удалить выбранный файл/папку? Действие невозможно отменить!')) {
+            removeFolder();
+        }
     });
 
     submitNewRepo.addEventListener('click', (event) => {
@@ -223,7 +373,6 @@ async function createPage() {
     });
 
     fileInput.addEventListener('change', () => {
-        console.log('0');
         let str = fileInput.value;
         if (str.indexOf("\\") >= 0) {
             let label = str.split("\\").pop();
@@ -234,8 +383,7 @@ async function createPage() {
             }
         }
         else 
-            fileInputLabel.textContent = str.value;
-        
+            fileInputLabel.textContent = str.value;      
     });
 
     isNewFileCheckbox.addEventListener('change', () => {
@@ -246,15 +394,8 @@ async function createPage() {
             filenameInput.readOnly = true;
             newFileNumber.value = 0;
         }
+        console.log('Значение нового файла: ' + newFileNumber.value);
     });
-
-    // function handleForm(event) { 
-    //     console.log('123123');
-    //     event.preventDefault();
-    //     alert(); 
-    // } 
-    // sendFileForm.addEventListener('submit', handleForm);
-    
 }
 
 // Обновление страницы
@@ -268,20 +409,42 @@ async function updatePage() {
     dropdownRepoButton.textContent = activeRepo.value;
 }
 
-// Глобальные переменные
-let repoList;
-let activeRepo;
-let activeFile = null;
-let currentNode = null;
-let currentRepoID = 0;
-let activeFileCommits = []; 
+// Получение списка репозиториев от сервера
+async function getRepositoriesList(url) {
+    let request = await axios.get(url, 
+        {
+            headers: {'X-Session-Id': `${params.session_id}`,}
+        })
+    let response = request.data;
+    return response
+}
 
-let userID = getCookie('id');
-let userRoleID = getCookie('role_id');
-let userUsername = getCookie('username');
-let userRealName = getCookie('real_name');
+// Создание файлового дерева
+function createRepositoryTree(repository) {
+    let tree = fillFolders(new TreeNode(repository.id, repository.name, 'folder', null, null), repository);
+    return tree
+}
 
-createPage();
+// // Создание узла файлового дерева
+// function createTreeNode(file, parent){
+//     let treeNode = new TreeNode(file.id, file.name, file.type, file.lock, parent);
+//     return treeNode;
+// }
+
+// Рекурсивное создание узлов дерева
+function fillFolders(node, repo) {
+    for (let index in repo.files) {
+        let file = repo.files[index];
+        file.id = parseInt(index);
+
+        if (file.type === 'folder') {
+            node.children.push(fillFolders(new TreeNode(file.id, file.name, file.type, file.lock, node), file));
+        } else {
+            node.children.push(new TreeNode(file.id, file.name, file.type, file.lock, node, file.last_commit));
+        }
+    }
+    return node;
+}
 
 
 // +-------------------------------+
@@ -339,18 +502,17 @@ async function uncaptureFile() {
     });
 }
 
-// Положить новую версию в хранилище
+// Положить новую версию или новый файл в хранилище
 async function pushFile() {
     console.log(`Pushing`);
 
-    fileInputLabel.value = 'Файл для загрузки...';
-    filenameInput.value = '';
-    filenameInput.readOnly = false;
-    commitTextInput.value = '';
-    fileInput.value = '';
+    // fileInputLabel.value = 'Файл для загрузки...';
+    // filenameInput.readOnly = false;
+    // commitTextInput.value = '';
+    // fileInput.value = '';
 
     if (activeFile === null) {
-        filenameInput.value = '';
+        //filenameInput.value = currentPath;
         filenameInput.readOnly = false;
         isNewFileCheckbox.checked = true;
         newFileNumber.value = 1;
@@ -359,17 +521,28 @@ async function pushFile() {
         let str = activeFile.value;
         if (str.indexOf(".") >= 0) {
             fileExtension.textContent = "." + str.split(".").pop();
-            filenameInput.value = str.substring(0, str.lastIndexOf("."));
+            //filenameInput.value = `${currentPath}/${str.substring(0, str.lastIndexOf("."))}`;
+            filenameInput.value = `${str.substring(0, str.lastIndexOf("."))}`;
         } else {
             fileExtension.textContent = "...";
-            filenameInput.value = str;
+            //filenameInput.value = `${currentPath}/${str}`;
+            filenameInput.value = `${str}`;
         }
         filenameInput.readOnly = true;
         isNewFileCheckbox.checked = false;
         newFileNumber.value = 0;
     }
 
+    // These variables are used to store the form data
+
+    // Add 'submit' event handler
+    sendFileForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        sendData();
+    });
+
     repoIdInput.value = activeRepo.key;
+
     document.cookie = `X-Session-Id=${params.session_id}`;
 }
 
@@ -377,10 +550,18 @@ async function pushFile() {
 async function pullFile() {
     console.log(`Pulling: ${activeFile.value}`);
     let url = `http://${ip}/api/repositories/downloadFile?`;
+    let pullPath;
+
+    if (currentPath === '')
+        pullPath = `${activeFile.value}`;
+    else
+        pullPath = `${currentPath}/${activeFile.value}`;
+
 
     let response = await fetch(url + new URLSearchParams({
         'repo_id': activeRepo.key,
-        'filename': activeFile.value, 
+        'filename': pullPath, 
+        'version': document.querySelector('input[name="commits-list"]:checked').value,
     }), {
         headers: {
             'X-Session-Id': params.session_id,
@@ -397,6 +578,7 @@ async function pullFile() {
     });
 }
 
+// Создание нового репозитория (Только для администратора!)
 async function createNewRepo() {
     let url = `http://${ip}/api/repositories/createRepository?name=${repoFilenameInput.value}&folder_name=${foldernameInput.value}`;
     console.log('Creating new repo');
@@ -413,9 +595,14 @@ async function createNewRepo() {
     });
 }
 
+// Создание новой папки (Только для администратора!)
 async function createNewFolder() {
-    let url = `http://${ip}/api/repositories/createFolder?repo_id=${folderCreateRepoID_Input.value}&path=${folderCreatePath_Input.value}`;
-    console.log('Creating new file');
+    let url;
+    if (currentPath === '')
+        url = `http://${ip}/api/repositories/createFolder?repo_id=${folderCreateRepoID_Input.value}&path=${folderCreatePath_Input.value}`;
+    else
+        url = `http://${ip}/api/repositories/createFolder?repo_id=${folderCreateRepoID_Input.value}&path=${currentPath + '/' + folderCreatePath_Input.value}`;
+
     let response = await fetch(url, {
         headers: {
             'X-Session-Id': params.session_id,
@@ -429,8 +616,13 @@ async function createNewFolder() {
     });
 }
 
+// Поулчение списка коммитов для выбранного файла
 async function getFileInfo() {
-    let url = `http://${ip}/api/repositories/commitHistory?repo_id=${currentRepoID}&filename=${activeFile.value}`;
+    let url;
+    if (currentPath === '')
+        url = `http://${ip}/api/repositories/commitHistory?repo_id=${currentRepoID}&filename=${activeFile.value}`;
+    else
+        url = `http://${ip}/api/repositories/commitHistory?repo_id=${currentRepoID}&filename=${currentPath}/${activeFile.value}`;
 
     let response = await fetch(url, {
         headers: {
@@ -447,7 +639,54 @@ async function getFileInfo() {
     });
 }
 
-// Выйти со страницы
+// Удаление текущего репозитория (Только для администратора!)
+async function removeRepo() {
+    let url = `http://${ip}/api/repositories/removeRepository?repo_id=${currentRepoID}`;
+
+    let response = await fetch(url, {
+        headers: {
+            'X-Session-Id': params.session_id,
+            'Content-Type': 'application/json',
+        }
+    }).then((message) => {
+        console.log(message);
+        location.reload();
+    }).catch((message) => {
+        console.log(message);
+    });
+}
+
+// Удаление выбранного файла (Только для администратора!)
+async function removeFolder() {
+    let url;
+    if (activeFile === null) {
+        if (currentPath === '') {
+            alert('Невозможно удалить корневую папку репозитория!');
+            return;
+        }
+        url = `http://${ip}/api/repositories/removeFile?repo_id=${currentRepoID}&path=${currentPath}`;
+    } else {
+        if (currentPath === '') {
+            url = `http://${ip}/api/repositories/removeFile?repo_id=${currentRepoID}&path=${activeFile.value}`;
+        } else {
+            url = `http://${ip}/api/repositories/removeFile?repo_id=${currentRepoID}&path=${currentPath}/${activeFile.value}`;
+        }
+    }
+
+    let response = await fetch(url, {
+        headers: {
+            'X-Session-Id': params.session_id,
+            'Content-Type': 'application/json',
+        }
+    }).then((message) => {
+        console.log(message);
+        updatePage();
+    }).catch((message) => {
+        console.log(message);
+    });
+}
+
+// Выход со страницы
 function quitPage() {
     if (confirm('Вы действительно хотите выйти?')) window.location.replace("./login.html");
 }
@@ -466,6 +705,7 @@ function DOM_CreateRepoList(repoList) {
             DOM_CreateHierarchy(activeRepo);
             //DOM_CreateDescription();
             DOM_UpdateInfoPanelHeader();
+            currentPath = '';
             descriptionWrapper.innerHTML = '';
 
             dropdownRepoButton.textContent = activeRepo.value;
@@ -482,7 +722,6 @@ function DOM_CreateHierarchy(treeNode, searchedValue = '') {
     currentNode = treeNode;
     activeFile = null;
     let counter = 0;
-    console.log(treeNode);
     if (treeNode.parent !== null) {
         const parentDOM = parentTemplate.content.cloneNode(true);
         parentDOM.querySelector('div').addEventListener('click', event => {
@@ -490,13 +729,18 @@ function DOM_CreateHierarchy(treeNode, searchedValue = '') {
         });
         parentDOM.querySelector('div').addEventListener('dblclick', event => {
             DOM_CreateHierarchy(treeNode.parent, searchedValue);
+            if((currentPath.match(new RegExp('/', 'g')) || []).length === 0)
+                currentPath = '';
+            else  
+                currentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                //currentPath += '/';
+            console.log(currentPath);
         });
         filesList.append(parentDOM);
     }
     treeNode.children.forEach(child => {
         if (searchedValue === '' || child.value.includes(searchedValue)) {
             let newDOMItem;
-            //console.log(child);
             counter++;
             if (child.type === "folder") {
                 newDOMItem = folderTemplate.content.cloneNode(true);
@@ -506,14 +750,22 @@ function DOM_CreateHierarchy(treeNode, searchedValue = '') {
                     descriptionWrapper.innerHTML = '';
                     DOM_UpdateButtonsState(null);
                 });
-                newDOMItem.querySelector('div').addEventListener('dblclick', event => DOM_CreateHierarchy(child, searchedValue));
+                newDOMItem.querySelector('div').addEventListener('dblclick', event => {
+                    DOM_CreateHierarchy(child, searchedValue);
+                    if (currentPath == '') {
+                        currentPath += `${child.value}`;
+                    } else {
+                        currentPath += `/${child.value}`
+                    }
+                    
+                    console.log(currentPath);
+                });
             } else if (child.type === "file" && child.lock !== null) {
                 newDOMItem = capturedFileTemplate.content.cloneNode(true);
                 newDOMItem.querySelector('.additional-info').textContent = child.lock.user;
                 let boxRow = newDOMItem.querySelector('.box-row');
                 boxRow.addEventListener('click', event => {
                     activeFile = child;
-                    //event.target.classList.toggle('active-file', true);
                     DOM_UpdateInfoPanelHeader();
                     DOM_CreateDescriptionSection(activeFile);
                     DOM_UpdateButtonsState(child);
@@ -524,7 +776,6 @@ function DOM_CreateHierarchy(treeNode, searchedValue = '') {
                 let boxRow = newDOMItem.querySelector('.box-row');
                 boxRow.addEventListener('click', event => {
                     activeFile = child;
-                    //boxRow.classList.toggle('active-file', true);
                     DOM_UpdateInfoPanelHeader();
                     DOM_CreateDescriptionSection(activeFile);
                     DOM_UpdateButtonsState(child);
@@ -546,6 +797,7 @@ function DOM_CreateHierarchy(treeNode, searchedValue = '') {
     numberOfFilesElement.textContent = `${counter} ${numeralFormatter(counter, 'файл', 'файла', 'файлов')}`;
 }
 
+// Изменение заголовка панели информации
 function DOM_UpdateInfoPanelHeader() {
     if (activeFile === null) descriptionFileName.textContent = 'Выберите файл для просмотра информации';
     else descriptionFileName.textContent = activeFile.value;
@@ -608,9 +860,17 @@ async function DOM_CreateCommitSection(activeFile = null) {
     let commitsTable = fileCommitsTableTemplate.content.cloneNode(true);
 
     let tablePart = commitsTable.querySelector('.table-part');
+    let commitCounter = 0;
 
     activeFileCommits.commits.forEach(commit => {
         let commitTableRow = fileCommitTemplate.content.cloneNode(true);
+        commitCounter += 1;
+        let commitRadio = commitTableRow.querySelector('.commit-radio');
+
+        commitRadio.value = commit.id;
+        if (commitCounter === 1)
+            commitRadio.checked = true;  
+
 
         commitTableRow.querySelector('.commit-timestamp').textContent = new Date(commit.timestamp * 1000).toLocaleString('en-GB');
         commitTableRow.querySelector('.commit-message').textContent = commit.message;
@@ -675,6 +935,7 @@ function DOM_UpdateButtonsState(treeNode = null) {
     }
 }
 
+// Изменение визуального представления страницы в зависимости от роли пользователя 
 function DOM_AddAdminActions() {
     if (parseInt(userRoleID) === 1) {
         userInfoButton.textContent = "Администратор";
@@ -685,10 +946,14 @@ function DOM_AddAdminActions() {
     }
 }
 
-function DOM_FillNewRepoModal() {
-
-}
-
+// Заполнение полей формы "Создание новой папки" при открытии 
 function DOM_FillNewFolderModal() {
     folderCreateRepoID_Input.value = activeRepo.key;
 }
+
+
+// +------------------------------------------+
+// | Запуск выполнения скрипта после загрузки |
+// +------------------------------------------+
+
+createPage();

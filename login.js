@@ -1,16 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const submitButton = document.getElementById('submitButton');
-    submitButton.addEventListener('click', sendRequest);
+  const submitButton = document.getElementById('submitButton');
+  submitButton.addEventListener('click', sendRequest);
 })
 
 async function sendRequest() {
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
     const url = `http://5.165.236.244:9999/api/login`;
-    // const headers = {
-    //   'Contetnt-Type': 'application/json',
-    //   Set
-    // }
 
     let request = await axios.post(url,
         {
